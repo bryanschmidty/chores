@@ -96,8 +96,12 @@ Route::middleware(['auth', 'super.admin'])->prefix('super-admin')->name('super-a
 // Invite routes (no auth required)
 Route::get('/invite/family/{encryptedFamilyId}', [InviteController::class, 'familyInvite'])
     ->name('invite.family');
+Route::post('/invite/family', [InviteController::class, 'storeFamilyInvite'])
+    ->name('invite.family.store');
 Route::get('/invite/user/{encryptedUserId}', [InviteController::class, 'userInvite'])
     ->name('invite.user');
+Route::post('/invite/user', [InviteController::class, 'storeUserInvite'])
+    ->name('invite.user.store');
 
 // Profile routes
 Route::middleware('auth')->group(function () {
