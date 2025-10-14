@@ -34,8 +34,17 @@ Route::middleware(['auth', 'family.admin'])->group(function () {
         ->except(['edit', 'update']);
     
     // Chore templates
-    Route::resource('admin.templates', ChoreTemplateController::class);
-    Route::patch('admin/templates/{template}/toggle', [ChoreTemplateController::class, 'toggle'])
+    Route::resource('templates', ChoreTemplateController::class)
+        ->names([
+            'index' => 'admin.templates.index',
+            'create' => 'admin.templates.create',
+            'store' => 'admin.templates.store',
+            'show' => 'admin.templates.show',
+            'edit' => 'admin.templates.edit',
+            'update' => 'admin.templates.update',
+            'destroy' => 'admin.templates.destroy',
+        ]);
+    Route::patch('templates/{template}/toggle', [ChoreTemplateController::class, 'toggle'])
         ->name('admin.templates.toggle');
 });
 
