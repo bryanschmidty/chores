@@ -13,6 +13,7 @@ const props = defineProps({
 
 const registrationType = ref(props.invite ? 'join' : 'create');
 const inviteCodeError = ref('');
+let checkTimeout = null;
 
 const form = useForm({
     name: '',
@@ -33,28 +34,51 @@ const checkInviteCode = async () => {
     }
 
     try {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        if (!csrfToken) {
+            inviteCodeError.value = 'CSRF token not found';
+            return;
+        }
+
         const response = await fetch(route('invites.check'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
             },
             body: JSON.stringify({ invite_code: form.invite_code })
         });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
         const data = await response.json();
         
         if (data.valid) {
             inviteCodeError.value = '';
         } else {
-            inviteCodeError.value = data.message;
+            inviteCodeError.value = data.message || 'Invalid invite code';
         }
     } catch (error) {
-        inviteCodeError.value = 'Error checking invite code';
+        console.error('Invite code check error:', error);
+        inviteCodeError.value = 'Unable to verify invite code. Please try again.';
     }
 };
 
-watch(() => form.invite_code, checkInviteCode);
+watch(() => form.invite_code, (newValue) => {
+    // Clear any existing timeout
+    if (checkTimeout) {
+        clearTimeout(checkTimeout);
+    }
+    
+    // Set a new timeout to debounce the API call
+    checkTimeout = setTimeout(() => {
+        checkInviteCode();
+    }, 500); // Wait 500ms after user stops typing
+});
 
 const submit = () => {
     if (isJoiningFamily.value && inviteCodeError.value) {
