@@ -4,6 +4,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FamilyInviteController;
 use App\Http\Controllers\ChoreTemplateController;
 use App\Http\Controllers\ChoreController;
+use App\Http\Controllers\SuperAdmin\FamilyController as SuperAdminFamilyController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -61,6 +62,19 @@ Route::middleware(['auth', 'family.admin'])->group(function () {
         ]);
     Route::post('chores/from-template', [ChoreController::class, 'createFromTemplate'])
         ->name('admin.chores.from-template');
+});
+
+// Super Admin routes
+Route::middleware(['auth', 'super.admin'])->prefix('super-admin')->name('super-admin.')->group(function () {
+    Route::resource('families', SuperAdminFamilyController::class);
+    Route::get('families/{family}/members', [SuperAdminFamilyController::class, 'members'])
+        ->name('families.members');
+    Route::delete('families/{family}/members', [SuperAdminFamilyController::class, 'removeMember'])
+        ->name('families.remove-member');
+    Route::patch('families/{family}/members/promote', [SuperAdminFamilyController::class, 'promoteMember'])
+        ->name('families.promote-member');
+    Route::patch('families/{family}/members/demote', [SuperAdminFamilyController::class, 'demoteMember'])
+        ->name('families.demote-member');
 });
 
 // Invite acceptance (no auth required for checking invites)

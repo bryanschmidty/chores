@@ -1,6 +1,6 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 
 const props = defineProps({
     stats: Object,
@@ -50,10 +50,13 @@ const props = defineProps({
                         <div class="p-6">
                             <h3 class="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <button class="p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">
+                                <Link
+                                    :href="route('super-admin.families.index')"
+                                    class="p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors block"
+                                >
                                     <div class="text-blue-600 font-medium">View All Families</div>
                                     <div class="text-sm text-blue-800">Manage family accounts</div>
-                                </button>
+                                </Link>
                                 <button class="p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors">
                                     <div class="text-green-600 font-medium">System Settings</div>
                                     <div class="text-sm text-green-800">Configure global settings</div>
