@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FamilyInviteController;
+use App\Http\Controllers\ChoreTemplateController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -26,10 +27,16 @@ Route::get('/family/setup', function () {
     return Inertia::render('Family/Setup');
 })->middleware(['auth'])->name('family.setup');
 
-// Family invites
+// Family admin routes
 Route::middleware(['auth', 'family.admin'])->group(function () {
+    // Family invites
     Route::resource('family.invites', FamilyInviteController::class)
         ->except(['edit', 'update']);
+    
+    // Chore templates
+    Route::resource('admin.templates', ChoreTemplateController::class);
+    Route::patch('admin/templates/{template}/toggle', [ChoreTemplateController::class, 'toggle'])
+        ->name('admin.templates.toggle');
 });
 
 // Invite acceptance (no auth required for checking invites)

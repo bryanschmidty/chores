@@ -1,6 +1,6 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 
 const props = defineProps({
     stats: Object,
@@ -123,10 +123,13 @@ const props = defineProps({
                                     <div class="text-blue-600 font-medium">Create Chore</div>
                                     <div class="text-sm text-blue-800">Assign new chores</div>
                                 </button>
-                                <button class="p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors">
+                                <Link
+                                    :href="route('admin.templates.index')"
+                                    class="p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors block"
+                                >
                                     <div class="text-green-600 font-medium">Manage Templates</div>
                                     <div class="text-sm text-green-800">Edit chore templates</div>
-                                </button>
+                                </Link>
                                 <button class="p-4 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors">
                                     <div class="text-purple-600 font-medium">Shop Items</div>
                                     <div class="text-sm text-purple-800">Manage rewards</div>
