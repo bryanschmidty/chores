@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FamilyInviteController;
+use App\Http\Controllers\FamilyController;
 use App\Http\Controllers\ChoreTemplateController;
 use App\Http\Controllers\ChoreController;
 use App\Http\Controllers\SuperAdmin\FamilyController as SuperAdminFamilyController;
@@ -62,6 +63,22 @@ Route::middleware(['auth', 'family.admin'])->group(function () {
         ]);
     Route::post('chores/from-template', [ChoreController::class, 'createFromTemplate'])
         ->name('admin.chores.from-template');
+    
+    // Family management
+    Route::get('family', [FamilyController::class, 'index'])
+        ->name('admin.family.index');
+    Route::get('family/edit', [FamilyController::class, 'edit'])
+        ->name('admin.family.edit');
+    Route::put('family', [FamilyController::class, 'update'])
+        ->name('admin.family.update');
+    Route::get('family/members', [FamilyController::class, 'members'])
+        ->name('admin.family.members');
+    Route::patch('family/members/promote', [FamilyController::class, 'promoteMember'])
+        ->name('admin.family.promote-member');
+    Route::patch('family/members/demote', [FamilyController::class, 'demoteMember'])
+        ->name('admin.family.demote-member');
+    Route::delete('family/members', [FamilyController::class, 'removeMember'])
+        ->name('admin.family.remove-member');
 });
 
 // Super Admin routes

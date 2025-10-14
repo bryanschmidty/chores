@@ -72,6 +72,12 @@ const showingNavigationDropdown = ref(false);
 
                                     <template #content>
                                         <DropdownLink
+                                            v-if="$page.props.auth.user && ['admin', 'super-admin'].includes($page.props.auth.user.role)"
+                                            :href="route('admin.family.index')"
+                                        >
+                                            Manage Family
+                                        </DropdownLink>
+                                        <DropdownLink
                                             :href="route('profile.edit')"
                                         >
                                             Profile

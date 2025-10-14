@@ -140,10 +140,13 @@ const props = defineProps({
                                     <div class="text-purple-600 font-medium">Manage Templates</div>
                                     <div class="text-sm text-purple-800">Edit chore templates</div>
                                 </Link>
-                                <button class="p-4 bg-yellow-50 hover:bg-yellow-100 rounded-lg transition-colors">
-                                    <div class="text-yellow-600 font-medium">Family Settings</div>
-                                    <div class="text-sm text-yellow-800">Configure family</div>
-                                </button>
+                                <Link
+                                    :href="route('admin.family.index')"
+                                    class="p-4 bg-yellow-50 hover:bg-yellow-100 rounded-lg transition-colors block"
+                                >
+                                    <div class="text-yellow-600 font-medium">Manage Family</div>
+                                    <div class="text-sm text-yellow-800">Configure family and members</div>
+                                </Link>
                             </div>
                         </div>
                     </div>
