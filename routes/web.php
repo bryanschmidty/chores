@@ -21,6 +21,11 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified', 'family.member'])
     ->name('dashboard');
 
+// Family setup (for users without families)
+Route::get('/family/setup', function () {
+    return Inertia::render('Family/Setup');
+})->middleware(['auth'])->name('family.setup');
+
 // Family invites
 Route::middleware(['auth', 'family.admin'])->group(function () {
     Route::resource('family.invites', FamilyInviteController::class)

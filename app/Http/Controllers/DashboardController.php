@@ -14,21 +14,20 @@ use Inertia\Response;
 
 class DashboardController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware(['auth', 'family.member']);
-    }
-
     /**
      * Display the dashboard based on user role.
      */
     public function index(): Response
     {
         $user = auth()->user();
-        $family = $user->family;
 
         if ($user->isSuperAdmin()) {
             return $this->superAdminDashboard();
+        }
+
+        // Check if user has a family
+        if (!$user->family_id) {
+            return redirect()->route('family.setup');
         }
 
         if ($user->isAdmin()) {
