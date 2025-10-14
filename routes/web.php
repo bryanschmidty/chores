@@ -33,8 +33,15 @@ Route::get('/family/setup', function () {
 // Family admin routes
 Route::middleware(['auth', 'family.admin'])->group(function () {
     // Family invites
-    Route::resource('family.invites', FamilyInviteController::class)
-        ->except(['edit', 'update']);
+    Route::resource('invites', FamilyInviteController::class)
+        ->except(['edit', 'update'])
+        ->names([
+            'index' => 'family.invites.index',
+            'create' => 'family.invites.create',
+            'store' => 'family.invites.store',
+            'show' => 'family.invites.show',
+            'destroy' => 'family.invites.destroy',
+        ]);
     
     // Chore templates
     Route::resource('templates', ChoreTemplateController::class)
