@@ -157,38 +157,6 @@ const getRoleText = (role) => {
                     </div>
 
 
-                    <!-- Quick Actions -->
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                        <div class="p-6">
-                            <h3 class="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
-                            
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <Link
-                                    :href="route('admin.family.members')"
-                                    class="p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors block"
-                                >
-                                    <div class="text-blue-600 font-medium">Manage Members</div>
-                                    <div class="text-sm text-blue-800">View, promote, demote, or remove members</div>
-                                </Link>
-                                
-                                <Link
-                                    :href="route('admin.family.members')"
-                                    class="p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors block"
-                                >
-                                    <div class="text-green-600 font-medium">Invite Members</div>
-                                    <div class="text-sm text-green-800">Share family invite link or add members</div>
-                                </Link>
-                                
-                                <Link
-                                    :href="route('admin.family.edit')"
-                                    class="p-4 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors block"
-                                >
-                                    <div class="text-purple-600 font-medium">Family Settings</div>
-                                    <div class="text-sm text-purple-800">Configure global family settings</div>
-                                </Link>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
