@@ -38,14 +38,14 @@ const formatDate = (date) => {
 const promoteMember = (userId) => {
     if (confirm('Are you sure you want to promote this member to admin?')) {
         form.user_id = userId;
-        form.post(route('admin.family.promote-member'));
+        form.patch(route('admin.family.promote-member'));
     }
 };
 
 const demoteMember = (userId) => {
     if (confirm('Are you sure you want to demote this admin to member?')) {
         form.user_id = userId;
-        form.post(route('admin.family.demote-member'));
+        form.patch(route('admin.family.demote-member'));
     }
 };
 
