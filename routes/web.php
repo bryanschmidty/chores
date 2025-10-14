@@ -3,6 +3,7 @@
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FamilyInviteController;
 use App\Http\Controllers\ChoreTemplateController;
+use App\Http\Controllers\ChoreController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -46,6 +47,20 @@ Route::middleware(['auth', 'family.admin'])->group(function () {
         ]);
     Route::patch('templates/{template}/toggle', [ChoreTemplateController::class, 'toggle'])
         ->name('admin.templates.toggle');
+    
+    // Chores
+    Route::resource('chores', ChoreController::class)
+        ->names([
+            'index' => 'admin.chores.index',
+            'create' => 'admin.chores.create',
+            'store' => 'admin.chores.store',
+            'show' => 'admin.chores.show',
+            'edit' => 'admin.chores.edit',
+            'update' => 'admin.chores.update',
+            'destroy' => 'admin.chores.destroy',
+        ]);
+    Route::post('chores/from-template', [ChoreController::class, 'createFromTemplate'])
+        ->name('admin.chores.from-template');
 });
 
 // Invite acceptance (no auth required for checking invites)

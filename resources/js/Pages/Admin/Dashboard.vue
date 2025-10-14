@@ -119,21 +119,27 @@ const props = defineProps({
                         <div class="p-6">
                             <h3 class="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
                             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                <button class="p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">
+                                <Link
+                                    :href="route('admin.chores.create')"
+                                    class="p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors block"
+                                >
                                     <div class="text-blue-600 font-medium">Create Chore</div>
                                     <div class="text-sm text-blue-800">Assign new chores</div>
-                                </button>
+                                </Link>
                                 <Link
-                                    :href="route('admin.templates.index')"
+                                    :href="route('admin.chores.index')"
                                     class="p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors block"
                                 >
-                                    <div class="text-green-600 font-medium">Manage Templates</div>
-                                    <div class="text-sm text-green-800">Edit chore templates</div>
+                                    <div class="text-green-600 font-medium">Manage Chores</div>
+                                    <div class="text-sm text-green-800">View and edit chores</div>
                                 </Link>
-                                <button class="p-4 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors">
-                                    <div class="text-purple-600 font-medium">Shop Items</div>
-                                    <div class="text-sm text-purple-800">Manage rewards</div>
-                                </button>
+                                <Link
+                                    :href="route('admin.templates.index')"
+                                    class="p-4 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors block"
+                                >
+                                    <div class="text-purple-600 font-medium">Manage Templates</div>
+                                    <div class="text-sm text-purple-800">Edit chore templates</div>
+                                </Link>
                                 <button class="p-4 bg-yellow-50 hover:bg-yellow-100 rounded-lg transition-colors">
                                     <div class="text-yellow-600 font-medium">Family Settings</div>
                                     <div class="text-sm text-yellow-800">Configure family</div>
