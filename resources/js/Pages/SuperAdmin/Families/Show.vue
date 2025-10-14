@@ -234,23 +234,6 @@ const getStatusColor = (status) => {
                         </div>
                     </div>
 
-                    <!-- Pending Invites -->
-                    <div v-if="family.family_invites && family.family_invites.length > 0" class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                        <div class="p-6">
-                            <h3 class="text-lg font-medium text-gray-900 mb-4">Pending Invites</h3>
-                            
-                            <div class="space-y-2">
-                                <div v-for="invite in family.family_invites.filter(i => i.status === 'pending')" :key="invite.id" class="flex items-center justify-between p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                                    <div>
-                                        <div class="font-medium text-yellow-800">Invite Code: {{ invite.invite_code }}</div>
-                                        <div class="text-sm text-yellow-600">
-                                            Role: {{ invite.role }} • Expires: {{ formatDate(invite.expires_at) }}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>

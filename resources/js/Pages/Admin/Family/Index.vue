@@ -156,29 +156,6 @@ const getRoleText = (role) => {
                         </div>
                     </div>
 
-                    <!-- Pending Invites -->
-                    <div v-if="family.family_invites && family.family_invites.length > 0" class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                        <div class="p-6">
-                            <h3 class="text-lg font-medium text-gray-900 mb-4">Pending Invites</h3>
-                            
-                            <div class="space-y-2">
-                                <div v-for="invite in family.family_invites.filter(i => i.status === 'pending')" :key="invite.id" class="flex items-center justify-between p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                                    <div>
-                                        <div class="font-medium text-yellow-800">Invite Code: {{ invite.invite_code }}</div>
-                                        <div class="text-sm text-yellow-600">
-                                            Role: {{ invite.role }} • Expires: {{ formatDate(invite.expires_at) }}
-                                        </div>
-                                    </div>
-                                    <DangerButton
-                                        class="text-sm"
-                                        @click="cancelInvite(invite)"
-                                    >
-                                        Cancel
-                                    </DangerButton>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
                     <!-- Quick Actions -->
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
@@ -195,11 +172,11 @@ const getRoleText = (role) => {
                                 </Link>
                                 
                                 <Link
-                                    :href="route('family.invites.index')"
+                                    :href="route('admin.family.members')"
                                     class="p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors block"
                                 >
-                                    <div class="text-green-600 font-medium">Create Invites</div>
-                                    <div class="text-sm text-green-800">Generate invite codes for new members</div>
+                                    <div class="text-green-600 font-medium">Invite Members</div>
+                                    <div class="text-sm text-green-800">Share family invite link or add members</div>
                                 </Link>
                                 
                                 <Link

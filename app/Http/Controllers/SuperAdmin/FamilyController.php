@@ -55,9 +55,6 @@ class FamilyController extends Controller
             'familyGoals' => function ($query) {
                 $query->latest();
             },
-            'familyInvites' => function ($query) {
-                $query->latest();
-            },
         ]);
 
         // Get family statistics

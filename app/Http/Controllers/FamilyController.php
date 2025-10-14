@@ -23,10 +23,7 @@ class FamilyController extends Controller
         $family->load([
             'users' => function ($query) {
                 $query->orderBy('role')->orderBy('name');
-            },
-            'familyInvites' => function ($query) {
-                $query->latest();
-            },
+            }
         ]);
 
         // Get family statistics
@@ -39,7 +36,6 @@ class FamilyController extends Controller
             'active_shop_items' => $family->shopItems()->where('is_active', true)->count(),
             'total_goals' => $family->familyGoals()->count(),
             'active_goals' => $family->familyGoals()->where('status', 'active')->count(),
-            'pending_invites' => $family->familyInvites()->where('status', 'pending')->count(),
         ];
 
         return Inertia::render('Admin/Family/Index', [
