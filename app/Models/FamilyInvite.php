@@ -121,13 +121,14 @@ class FamilyInvite extends Model
         return $code;
     }
 
-    public static function createForFamily(Family $family, User $createdBy, ?string $email = null, int $expiryDays = 7): self
+    public static function createForFamily(Family $family, User $createdBy, ?string $email = null, string $role = 'member', int $expiryDays = 7): self
     {
         return static::create([
             'family_id' => $family->id,
             'created_by' => $createdBy->id,
             'invite_code' => static::generateInviteCode(),
             'email' => $email,
+            'role' => $role,
             'expires_at' => now()->addDays($expiryDays),
         ]);
     }

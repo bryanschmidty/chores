@@ -41,6 +41,7 @@ class FamilyInviteController extends Controller
     {
         $request->validate([
             'email' => 'nullable|email|max:255',
+            'role' => 'required|in:admin,member',
             'expiry_days' => 'integer|min:1|max:30',
         ]);
 
@@ -50,6 +51,7 @@ class FamilyInviteController extends Controller
             $family,
             auth()->user(),
             $request->email,
+            $request->role,
             $request->expiry_days ?? 7
         );
 

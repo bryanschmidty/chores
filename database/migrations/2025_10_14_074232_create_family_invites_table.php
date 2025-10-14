@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
             $table->string('invite_code')->unique();
             $table->string('email')->nullable();
+            $table->enum('role', ['admin', 'member'])->default('member');
             $table->enum('status', ['pending', 'accepted', 'expired'])->default('pending');
             $table->timestamp('expires_at');
             $table->foreignId('accepted_by')->nullable()->constrained('users')->onDelete('set null');

@@ -91,7 +91,7 @@ class RegisteredUserController extends Controller
                     ->first();
 
                 $family = $invite->family;
-                $role = $invite->role; // Use the role from the invite
+                $role = $invite->role ?? 'member'; // Use the role from the invite, default to member
             } else {
                 // Create new family
                 $family = Family::create([
