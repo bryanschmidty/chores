@@ -3,6 +3,9 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import DangerButton from '@/Components/DangerButton.vue';
+import TextInput from '@/Components/TextInput.vue';
+import InputLabel from '@/Components/InputLabel.vue';
+import InputError from '@/Components/InputError.vue';
 
 const props = defineProps({
     family: Object,
@@ -12,6 +15,14 @@ const props = defineProps({
 const form = useForm({
     user_id: null,
 });
+
+const addMemberForm = useForm({
+    name: '',
+    email: '',
+    role: 'member',
+});
+
+const familyInviteLink = route('invite.family', { encryptedFamilyId: props.family.encrypted_id });
 
 const getRoleColor = (role) => {
     const colors = {
@@ -54,6 +65,20 @@ const removeMember = (userId) => {
         form.user_id = userId;
         form.delete(route('admin.family.remove-member'));
     }
+};
+
+const addMember = () => {
+    addMemberForm.post(route('admin.family.add-member'), {
+        onSuccess: () => {
+            addMemberForm.reset();
+        },
+    });
+};
+
+const copyFamilyInviteLink = () => {
+    navigator.clipboard.writeText(familyInviteLink);
+    // You could add a toast notification here
+    alert('Family invite link copied to clipboard!');
 };
 </script>
 
@@ -161,27 +186,92 @@ const removeMember = (userId) => {
                         </div>
                     </div>
 
-                    <!-- Invite New Members -->
+                    <!-- Family Invite Link -->
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="p-6">
-                            <div class="flex items-center justify-between mb-4">
-                                <h3 class="text-lg font-medium text-gray-900">Invite New Members</h3>
-                                <Link
-                                    :href="route('family.invites.index')"
-                                    class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
-                                >
-                                    Manage Invites
-                                </Link>
-                            </div>
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Family Invite Link</h3>
                             <p class="text-sm text-gray-600 mb-4">
-                                Create invite codes to allow new members to join your family. You can set their role and expiration date.
+                                Share this link with anyone you want to invite to join your family. They can use it to create an account and automatically join your family.
                             </p>
-                            <Link
-                                :href="route('family.invites.create')"
-                                class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition ease-in-out duration-150"
-                            >
-                                Create New Invite
-                            </Link>
+                            <div class="flex items-center space-x-4">
+                                <input
+                                    type="text"
+                                    :value="familyInviteLink"
+                                    readonly
+                                    class="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm font-mono"
+                                />
+                                <button
+                                    @click="copyFamilyInviteLink"
+                                    class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded text-sm transition-colors"
+                                >
+                                    Copy Link
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Add New Member -->
+                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                        <div class="p-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Add New Member</h3>
+                            <p class="text-sm text-gray-600 mb-4">
+                                Add a new member by name and email. They will receive a personalized invite link to set their password.
+                            </p>
+                            
+                            <form @submit.prevent="addMember" class="space-y-4">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <InputLabel for="name" value="Name" />
+                                        <TextInput
+                                            id="name"
+                                            type="text"
+                                            class="mt-1 block w-full"
+                                            v-model="addMemberForm.name"
+                                            required
+                                        />
+                                        <InputError class="mt-2" :message="addMemberForm.errors.name" />
+                                    </div>
+                                    
+                                    <div>
+                                        <InputLabel for="email" value="Email" />
+                                        <TextInput
+                                            id="email"
+                                            type="email"
+                                            class="mt-1 block w-full"
+                                            v-model="addMemberForm.email"
+                                            required
+                                        />
+                                        <InputError class="mt-2" :message="addMemberForm.errors.email" />
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <InputLabel for="role" value="Role" />
+                                    <select
+                                        id="role"
+                                        class="mt-1 block w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-md shadow-sm"
+                                        v-model="addMemberForm.role"
+                                        required
+                                    >
+                                        <option value="member">Member</option>
+                                        <option value="admin">Admin</option>
+                                    </select>
+                                    <p class="mt-1 text-sm text-gray-500">
+                                        <span class="font-medium">Member:</span> Can complete chores, redeem items, contribute to goals<br>
+                                        <span class="font-medium">Admin:</span> Can manage chores, templates, shop items, and family settings
+                                    </p>
+                                    <InputError class="mt-2" :message="addMemberForm.errors.role" />
+                                </div>
+                                
+                                <div class="flex justify-end">
+                                    <PrimaryButton
+                                        :class="{ 'opacity-25': addMemberForm.processing }"
+                                        :disabled="addMemberForm.processing"
+                                    >
+                                        Add Member
+                                    </PrimaryButton>
+                                </div>
+                            </form>
                         </div>
                     </div>
 

@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Family;
 use App\Models\User;
-use App\Models\FamilyInvite;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Crypt;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -110,7 +110,11 @@ class FamilyController extends Controller
             });
 
         return Inertia::render('Admin/Family/Members', [
-            'family' => $family,
+            'family' => [
+                'id' => $family->id,
+                'name' => $family->name,
+                'encrypted_id' => Crypt::encryptString($family->id),
+            ],
             'members' => $members,
         ]);
     }
@@ -212,56 +216,38 @@ class FamilyController extends Controller
     }
 
     /**
-     * Create a new family invite.
+     * Add a new member to the family.
      */
-    public function createInvite(Request $request): RedirectResponse
+    public function addMember(Request $request): RedirectResponse
     {
-        $family = auth()->user()->family;
-
         $request->validate([
-            'email' => 'nullable|email|max:255',
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|lowercase|email|max:255|unique:users',
             'role' => 'required|in:admin,member',
-            'expires_at' => 'nullable|date|after:now',
         ]);
 
-        $invite = $family->familyInvites()->create([
-            'invite_code' => $this->generateInviteCode(),
-            'email' => $request->email,
-            'role' => $request->role,
-            'expires_at' => $request->expires_at ?? now()->addDays(7),
-        ]);
-
-        return redirect()->back()
-            ->with('success', 'Invite created successfully. Share this code: ' . $invite->invite_code);
-    }
-
-    /**
-     * Cancel/delete a family invite.
-     */
-    public function cancelInvite(FamilyInvite $invite): RedirectResponse
-    {
         $family = auth()->user()->family;
 
-        if ($invite->family_id !== $family->id) {
-            return redirect()->back()
-                ->withErrors(['invite' => 'Invite does not belong to your family.']);
-        }
-
-        $invite->delete();
+        // Create user without password (they'll set it via invite)
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make('temp-password-' . time()), // Temporary password
+            'family_id' => $family->id,
+            'role' => $request->role,
+            'notification_preferences' => [
+                'email_chore_assigned' => true,
+                'email_chore_completed' => true,
+                'email_chore_verified' => true,
+                'email_overdue_reminder' => true,
+                'browser_chore_assigned' => true,
+                'browser_chore_completed' => true,
+                'browser_chore_verified' => true,
+                'browser_overdue_reminder' => true,
+            ],
+        ]);
 
         return redirect()->back()
-            ->with('success', 'Invite cancelled successfully.');
-    }
-
-    /**
-     * Generate a unique invite code.
-     */
-    private function generateInviteCode(): string
-    {
-        do {
-            $code = Str::random(10);
-        } while (FamilyInvite::where('invite_code', $code)->exists());
-
-        return $code;
+            ->with('success', 'Member added successfully. Send them this invite link: ' . route('invite.user', ['encryptedUserId' => Crypt::encryptString($user->id)]));
     }
 }

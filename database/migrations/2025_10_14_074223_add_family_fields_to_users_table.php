@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->foreignId('family_id')->nullable()->constrained()->onDelete('cascade');
-            $table->enum('role', ['super-admin', 'admin', 'member'])->default('member');
-            $table->json('notification_preferences')->nullable();
+            $table->foreignId('family_id')->after('id')->nullable()->constrained()->onDelete('cascade');
+            $table->enum('role', ['super-admin', 'admin', 'member'])->after('email')->default('member');
+            $table->json('notification_preferences')->after('role')->nullable();
         });
     }
 

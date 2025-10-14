@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\FamilyInviteController;
+use App\Http\Controllers\InviteController;
 use App\Http\Controllers\FamilyController;
 use App\Http\Controllers\ChoreTemplateController;
 use App\Http\Controllers\ChoreController;
@@ -32,16 +32,6 @@ Route::get('/family/setup', function () {
 
 // Family admin routes
 Route::middleware(['auth', 'family.admin'])->group(function () {
-    // Family invites
-    Route::resource('invites', FamilyInviteController::class)
-        ->except(['edit', 'update'])
-        ->names([
-            'index' => 'family.invites.index',
-            'create' => 'family.invites.create',
-            'store' => 'family.invites.store',
-            'show' => 'family.invites.show',
-            'destroy' => 'family.invites.destroy',
-        ]);
     
     // Chore templates
     Route::resource('templates', ChoreTemplateController::class)
@@ -86,6 +76,8 @@ Route::middleware(['auth', 'family.admin'])->group(function () {
         ->name('admin.family.demote-member');
     Route::delete('family/members', [FamilyController::class, 'removeMember'])
         ->name('admin.family.remove-member');
+    Route::post('family/members/add', [FamilyController::class, 'addMember'])
+        ->name('admin.family.add-member');
 });
 
 // Super Admin routes
@@ -101,14 +93,11 @@ Route::middleware(['auth', 'super.admin'])->prefix('super-admin')->name('super-a
         ->name('families.demote-member');
 });
 
-// Invite acceptance (no auth required for checking invites)
-Route::post('/invites/check', [FamilyInviteController::class, 'check'])
-    ->name('invites.check');
-
-Route::middleware('auth')->group(function () {
-    Route::post('/invites/accept', [FamilyInviteController::class, 'accept'])
-        ->name('invites.accept');
-});
+// Invite routes (no auth required)
+Route::get('/invite/family/{encryptedFamilyId}', [InviteController::class, 'familyInvite'])
+    ->name('invite.family');
+Route::get('/invite/user/{encryptedUserId}', [InviteController::class, 'userInvite'])
+    ->name('invite.user');
 
 // Profile routes
 Route::middleware('auth')->group(function () {

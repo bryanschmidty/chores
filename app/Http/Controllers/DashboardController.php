@@ -31,6 +31,10 @@ class DashboardController extends Controller
         }
 
         if ($user->isAdmin()) {
+            // If admin has no other family members, redirect to family members page
+            if ($user->family->users()->count() === 1) {
+                return redirect()->route('admin.family.members');
+            }
             return $this->adminDashboard();
         }
 
