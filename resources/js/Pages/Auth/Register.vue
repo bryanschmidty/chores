@@ -85,6 +85,16 @@ const submit = () => {
         return;
     }
     
+    // Clear family_name if joining existing family
+    if (isJoiningFamily.value) {
+        form.family_name = '';
+    }
+    
+    // Clear invite_code if creating new family
+    if (isCreatingFamily.value) {
+        form.invite_code = '';
+    }
+    
     form.post(route('register'), {
         onFinish: () => form.reset('password', 'password_confirmation'),
     });

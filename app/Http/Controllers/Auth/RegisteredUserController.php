@@ -46,13 +46,35 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        // First validate basic fields
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'family_name' => 'required_if:invite_code,null|string|max:255',
-            'invite_code' => 'nullable|string|exists:family_invites,invite_code',
+            'family_name' => 'nullable|string|max:255',
+            'invite_code' => 'nullable|string',
         ]);
+
+        // Validate invite code if provided
+        if ($request->invite_code) {
+            $invite = FamilyInvite::where('invite_code', $request->invite_code)
+                ->where('status', 'pending')
+                ->where('expires_at', '>', now())
+                ->first();
+
+            if (!$invite) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'invite_code' => ['Invalid or expired invite code.'],
+                ]);
+            }
+        } else {
+            // If no invite code, family name is required
+            if (empty($request->family_name)) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'family_name' => ['The family name field is required when creating a new family.'],
+                ]);
+            }
+        }
 
         return DB::transaction(function () use ($request) {
             $invite = null;
@@ -61,19 +83,15 @@ class RegisteredUserController extends Controller
 
             // Check if user is joining via invite
             if ($request->invite_code) {
+                // Re-fetch the invite (already validated above)
                 $invite = FamilyInvite::where('invite_code', $request->invite_code)
                     ->where('status', 'pending')
                     ->where('expires_at', '>', now())
+                    ->with('family')
                     ->first();
 
-                if (!$invite) {
-                    throw \Illuminate\Validation\ValidationException::withMessages([
-                        'invite_code' => ['Invalid or expired invite code.'],
-                    ]);
-                }
-
                 $family = $invite->family;
-                $role = 'member';
+                $role = $invite->role; // Use the role from the invite
             } else {
                 // Create new family
                 $family = Family::create([
