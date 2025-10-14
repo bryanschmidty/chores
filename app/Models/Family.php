@@ -42,10 +42,6 @@ class Family extends Model
         return $this->hasMany(FamilyGoal::class);
     }
 
-    public function familyInvites(): HasMany
-    {
-        return $this->hasMany(FamilyInvite::class);
-    }
 
     public function pointTransactions(): HasMany
     {
