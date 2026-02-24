@@ -52,7 +52,6 @@ class ChorePolicy
      */
     public function complete(User $user, Chore $chore): bool
     {
-        return $user->family_id === $chore->family_id && 
-               ($user->id === $chore->assigned_to || $user->canManageFamily());
+        return $user->family_id === $chore->family_id && $user->canManageFamily();
     }
 }

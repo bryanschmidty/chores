@@ -38,24 +38,13 @@ const submit = () => {
                     </svg>
                 </div>
                 <div class="ml-3">
-                    <h3 class="text-sm font-medium text-green-800">
-                        Welcome {{ user.name }} to the {{ family.name }} family!
+                    <h3 class="text-lg font-medium text-green-800">
+                        Welcome {{ user.name }}!
                     </h3>
                     <div class="mt-2 text-sm text-green-700">
-                        <p>Your account has been created. Please set your password to complete your registration and start managing chores with your family.</p>
+                        <p>Welcome to the {{ family.name }} group! Your account has been created. Please set your password to complete your registration and start managing chores with your family.</p>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- User Info -->
-        <div class="mb-6 rounded-lg bg-gray-50 p-4">
-            <h4 class="text-sm font-medium text-gray-900 mb-2">Your Account Details</h4>
-            <div class="text-sm text-gray-600 space-y-1">
-                <div><span class="font-medium">Name:</span> {{ user.name }}</div>
-                <div><span class="font-medium">Email:</span> {{ user.email }}</div>
-                <div><span class="font-medium">Role:</span> {{ user.role === 'admin' ? 'Admin' : 'Member' }}</div>
-                <div><span class="font-medium">Family:</span> {{ family.name }}</div>
             </div>
         </div>
 

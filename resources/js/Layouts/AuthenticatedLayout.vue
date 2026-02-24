@@ -1,13 +1,22 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 
 const showingNavigationDropdown = ref(false);
+const page = usePage();
+
+const isAdmin = computed(() => {
+    return page.props.auth?.user && ['admin', 'super-admin'].includes(page.props.auth.user.role);
+});
+
+const isMember = computed(() => {
+    return page.props.auth?.user?.role === 'member';
+});
 </script>
 
 <template>
@@ -38,6 +47,27 @@ const showingNavigationDropdown = ref(false);
                                     :active="route().current('dashboard')"
                                 >
                                     Dashboard
+                                </NavLink>
+                                <NavLink
+                                    v-if="isAdmin"
+                                    :href="route('admin.chores.index')"
+                                    :active="route().current('admin.chores.*')"
+                                >
+                                    Chores
+                                </NavLink>
+                                <NavLink
+                                    v-if="isAdmin"
+                                    :href="route('admin.assign-chores.index')"
+                                    :active="route().current('admin.assign-chores.*')"
+                                >
+                                    Assign Chores
+                                </NavLink>
+                                <NavLink
+                                    v-if="isMember"
+                                    :href="route('chores.index')"
+                                    :active="route().current('chores.*')"
+                                >
+                                    Chores
                                 </NavLink>
                             </div>
                         </div>
@@ -72,10 +102,10 @@ const showingNavigationDropdown = ref(false);
 
                                     <template #content>
                                         <DropdownLink
-                                            v-if="$page.props.auth.user && ['admin', 'super-admin'].includes($page.props.auth.user.role)"
+                                            v-if="isAdmin"
                                             :href="route('admin.family.index')"
                                         >
-                                            Manage Family
+                                            My Family
                                         </DropdownLink>
                                         <DropdownLink
                                             :href="route('profile.edit')"
@@ -151,6 +181,27 @@ const showingNavigationDropdown = ref(false);
                             :active="route().current('dashboard')"
                         >
                             Dashboard
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            v-if="isAdmin"
+                            :href="route('admin.chores.index')"
+                            :active="route().current('admin.chores.*')"
+                        >
+                            Chores
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            v-if="isAdmin"
+                            :href="route('admin.assign-chores.index')"
+                            :active="route().current('admin.assign-chores.*')"
+                        >
+                            Assign Chores
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            v-if="isMember"
+                            :href="route('chores.index')"
+                            :active="route().current('chores.*')"
+                        >
+                            Chores
                         </ResponsiveNavLink>
                     </div>
 

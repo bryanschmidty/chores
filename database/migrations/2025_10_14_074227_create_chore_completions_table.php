@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('chore_completions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('chore_id')->constrained()->onDelete('cascade');
+            $table->foreignId('assigned_chore_id')->constrained('assigned_chores')->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->timestamp('completed_at');
             $table->foreignId('verified_by')->nullable()->constrained('users')->onDelete('set null');

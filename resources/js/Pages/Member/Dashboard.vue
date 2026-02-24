@@ -1,6 +1,6 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 
 const props = defineProps({
     pointsBalance: Number,
@@ -9,6 +9,7 @@ const props = defineProps({
     recentTransactions: Array,
     shopItems: Array,
     familyGoals: Array,
+    availableChores: Number,
 });
 </script>
 
@@ -25,19 +26,37 @@ const props = defineProps({
         <div class="py-6">
             <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
                 <div class="space-y-6">
-                    <!-- Points Balance -->
-                    <div class="bg-gradient-to-r from-blue-500 to-purple-600 text-white overflow-hidden shadow-sm sm:rounded-lg">
-                        <div class="p-6">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <div class="text-3xl font-bold">{{ pointsBalance || 0 }}</div>
-                                    <div class="text-blue-100">Points Balance</div>
-                                </div>
-                                <div class="text-4xl opacity-20">
-                                    💰
+                    <!-- Points Balance and Available Chores -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-gradient-to-r from-blue-500 to-purple-600 text-white overflow-hidden shadow-sm sm:rounded-lg">
+                            <div class="p-6">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <div class="text-3xl font-bold">{{ pointsBalance || 0 }}</div>
+                                        <div class="text-blue-100">Points Balance</div>
+                                    </div>
+                                    <div class="text-4xl opacity-20">
+                                        💰
+                                    </div>
                                 </div>
                             </div>
                         </div>
+                        <Link
+                            :href="route('chores.index')"
+                            class="bg-gradient-to-r from-green-500 to-emerald-600 text-white overflow-hidden shadow-sm sm:rounded-lg hover:shadow-md transition-shadow"
+                        >
+                            <div class="p-6">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <div class="text-3xl font-bold">{{ availableChores || 0 }}</div>
+                                        <div class="text-green-100">Available Chores</div>
+                                    </div>
+                                    <div class="text-4xl opacity-20">
+                                        📋
+                                    </div>
+                                </div>
+                            </div>
+                        </Link>
                     </div>
 
                     <!-- My Chores -->
@@ -47,9 +66,9 @@ const props = defineProps({
                             <div class="p-6">
                                 <h3 class="text-lg font-medium text-red-600 mb-4">Overdue Chores</h3>
                                 <div class="space-y-2">
-                                    <div v-for="chore in myChores.overdue" :key="chore.id" class="p-3 bg-red-50 border border-red-200 rounded-lg">
-                                        <div class="font-medium text-red-800">{{ chore.name }}</div>
-                                        <div class="text-sm text-red-600">{{ chore.points }} points</div>
+                                    <div v-for="assignedChore in myChores.overdue" :key="assignedChore.id" class="p-3 bg-red-50 border border-red-200 rounded-lg">
+                                        <div class="font-medium text-red-800">{{ assignedChore.chore?.name }}</div>
+                                        <div class="text-sm text-red-600">{{ assignedChore.chore?.points }} points</div>
                                         <button class="mt-2 px-3 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600">
                                             Complete Now
                                         </button>
@@ -63,9 +82,9 @@ const props = defineProps({
                             <div class="p-6">
                                 <h3 class="text-lg font-medium text-yellow-600 mb-4">Today's Chores</h3>
                                 <div class="space-y-2">
-                                    <div v-for="chore in myChores.today" :key="chore.id" class="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                                        <div class="font-medium text-yellow-800">{{ chore.name }}</div>
-                                        <div class="text-sm text-yellow-600">{{ chore.points }} points</div>
+                                    <div v-for="assignedChore in myChores.today" :key="assignedChore.id" class="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                        <div class="font-medium text-yellow-800">{{ assignedChore.chore?.name }}</div>
+                                        <div class="text-sm text-yellow-600">{{ assignedChore.chore?.points }} points</div>
                                         <button class="mt-2 px-3 py-1 bg-yellow-500 text-white rounded text-sm hover:bg-yellow-600">
                                             Complete
                                         </button>
@@ -80,12 +99,12 @@ const props = defineProps({
                         <div class="p-6">
                             <h3 class="text-lg font-medium text-blue-600 mb-4">Upcoming Chores</h3>
                             <div class="space-y-2">
-                                <div v-for="chore in myChores.upcoming" :key="chore.id" class="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                <div v-for="assignedChore in myChores.upcoming" :key="assignedChore.id" class="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
                                     <div>
-                                        <div class="font-medium text-blue-800">{{ chore.name }}</div>
-                                        <div class="text-sm text-blue-600">Due: {{ chore.next_due_date }}</div>
+                                        <div class="font-medium text-blue-800">{{ assignedChore.chore?.name }}</div>
+                                        <div class="text-sm text-blue-600">Due: {{ assignedChore.due_date }}</div>
                                     </div>
-                                    <div class="text-sm font-medium text-blue-600">{{ chore.points }} pts</div>
+                                    <div class="text-sm font-medium text-blue-600">{{ assignedChore.chore?.points }} pts</div>
                                 </div>
                             </div>
                         </div>
@@ -140,7 +159,7 @@ const props = defineProps({
                                     <h4 class="font-medium text-gray-700 mb-2">Recent Completions</h4>
                                     <div class="space-y-1">
                                         <div v-for="completion in recentCompletions" :key="completion.id" class="text-sm text-gray-600">
-                                            ✅ {{ completion.chore.name }} - {{ completion.completed_at }}
+                                            ✅ {{ completion.assignedChore?.chore?.name }} - {{ completion.completed_at }}
                                         </div>
                                     </div>
                                 </div>

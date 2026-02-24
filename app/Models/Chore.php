@@ -11,22 +11,16 @@ class Chore extends Model
 {
     protected $fillable = [
         'family_id',
-        'template_id',
-        'assigned_to',
-        'created_by',
         'name',
         'description',
         'points',
-        'recurrence_type',
-        'recurrence_interval',
-        'next_due_date',
-        'requires_verification',
-        'status',
+        'frequency',
+        'review_required',
+        'photos_required',
     ];
 
     protected $casts = [
-        'next_due_date' => 'date',
-        'requires_verification' => 'boolean',
+        'review_required' => 'boolean',
     ];
 
     // Relationships
@@ -35,29 +29,9 @@ class Chore extends Model
         return $this->belongsTo(Family::class);
     }
 
-    public function template(): BelongsTo
+    public function assignedChores(): HasMany
     {
-        return $this->belongsTo(ChoreTemplate::class, 'template_id');
-    }
-
-    public function assignedTo(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'assigned_to');
-    }
-
-    public function createdBy(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'created_by');
-    }
-
-    public function completions(): HasMany
-    {
-        return $this->hasMany(ChoreCompletion::class);
-    }
-
-    public function latestCompletion(): HasMany
-    {
-        return $this->hasMany(ChoreCompletion::class)->latest();
+        return $this->hasMany(AssignedChore::class);
     }
 
     // Scopes
@@ -66,116 +40,65 @@ class Chore extends Model
         return $query->where('family_id', $familyId);
     }
 
-    public function scopeAssignedTo($query, $userId)
+    public function scopeByFrequency($query, $frequency)
     {
-        return $query->where('assigned_to', $userId);
-    }
-
-    public function scopePending($query)
-    {
-        return $query->where('status', 'pending');
-    }
-
-    public function scopeCompleted($query)
-    {
-        return $query->where('status', 'completed');
-    }
-
-    public function scopeOverdue($query)
-    {
-        return $query->where('status', 'overdue');
-    }
-
-    public function scopeDueToday($query)
-    {
-        return $query->whereDate('next_due_date', today());
-    }
-
-    public function scopeDueBefore($query, $date)
-    {
-        return $query->where('next_due_date', '<=', $date);
+        return $query->where('frequency', $frequency);
     }
 
     public function scopeRecurring($query)
     {
-        return $query->where('recurrence_type', '!=', 'none');
+        return $query->where('frequency', '!=', 'adhoc');
     }
 
     // Helper methods
-    public function isOverdue(): bool
-    {
-        return $this->next_due_date < today() && $this->status === 'pending';
-    }
-
-    public function isDueToday(): bool
-    {
-        return $this->next_due_date->isToday() && $this->status === 'pending';
-    }
-
     public function isRecurring(): bool
     {
-        return $this->recurrence_type !== 'none';
+        return $this->frequency !== 'adhoc';
     }
 
-    public function calculateNextDueDate(): Carbon
+    public function getOccurrencesPerWeek(): int
     {
-        $currentDate = $this->next_due_date;
-
-        return match ($this->recurrence_type) {
-            'daily' => $currentDate->addDay(),
-            'weekly' => $currentDate->addWeek(),
-            'monthly' => $currentDate->addMonth(),
-            'custom' => $currentDate->addDays($this->recurrence_interval ?? 1),
-            default => $currentDate,
+        return match ($this->frequency) {
+            'daily' => 6, // Monday-Saturday
+            'twice_weekly' => 2,
+            'weekly' => 1,
+            'twice_monthly' => 1, // Every 2 weeks
+            'monthly' => 1,
+            'adhoc' => 0,
+            default => 0,
         };
-    }
-
-    public function updateStatus(): void
-    {
-        if ($this->isOverdue()) {
-            $this->update(['status' => 'overdue']);
-        }
-    }
-
-    public function markCompleted(): void
-    {
-        $this->update(['status' => 'completed']);
-
-        if ($this->isRecurring()) {
-            $this->update([
-                'next_due_date' => $this->calculateNextDueDate(),
-                'status' => 'pending',
-            ]);
-        }
-    }
-
-    public function getPhotoRequirements(): string
-    {
-        if ($this->template) {
-            return $this->template->photo_requirements;
-        }
-
-        return 'none'; // Default for ad-hoc chores
     }
 
     public function requiresPhotos(): bool
     {
-        return in_array($this->getPhotoRequirements(), ['after', 'both']);
+        return in_array($this->photos_required, ['before_and_after', 'only_after']);
     }
 
     public function requiresBeforePhoto(): bool
     {
-        return $this->getPhotoRequirements() === 'both';
+        return $this->photos_required === 'before_and_after';
     }
 
-    public function getRecurrenceText(): string
+    public function getFrequencyText(): string
     {
-        return match ($this->recurrence_type) {
+        return match ($this->frequency) {
             'daily' => 'Daily',
+            'twice_weekly' => 'Twice Weekly',
             'weekly' => 'Weekly',
+            'twice_monthly' => 'Twice Monthly',
             'monthly' => 'Monthly',
-            'custom' => "Every {$this->recurrence_interval} days",
-            default => 'One-time',
+            'adhoc' => 'Ad Hoc',
+            default => 'Unknown',
+        };
+    }
+
+    public function getPhotosRequiredText(): string
+    {
+        return match ($this->photos_required) {
+            'none' => 'No photos required',
+            'before_and_after' => 'Before and after photos required',
+            'only_after' => 'After photo required',
+            default => 'No photos required',
         };
     }
 }

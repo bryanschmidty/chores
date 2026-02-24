@@ -3,10 +3,12 @@
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InviteController;
 use App\Http\Controllers\FamilyController;
-use App\Http\Controllers\ChoreTemplateController;
 use App\Http\Controllers\ChoreController;
+use App\Http\Controllers\AssignChoreController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\SuperAdmin\FamilyController as SuperAdminFamilyController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Member\ChoresController as MemberChoresController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -31,53 +33,42 @@ Route::get('/family/setup', function () {
 })->middleware(['auth'])->name('family.setup');
 
 // Family admin routes
-Route::middleware(['auth', 'family.admin'])->group(function () {
+Route::middleware(['auth', 'family.admin'])->prefix('admin')->name('admin.')->group(function () {
     
-    // Chore templates
-    Route::resource('templates', ChoreTemplateController::class)
-        ->names([
-            'index' => 'admin.templates.index',
-            'create' => 'admin.templates.create',
-            'store' => 'admin.templates.store',
-            'show' => 'admin.templates.show',
-            'edit' => 'admin.templates.edit',
-            'update' => 'admin.templates.update',
-            'destroy' => 'admin.templates.destroy',
-        ]);
-    Route::patch('templates/{template}/toggle', [ChoreTemplateController::class, 'toggle'])
-        ->name('admin.templates.toggle');
-    
-    // Chores
-    Route::resource('chores', ChoreController::class)
-        ->names([
-            'index' => 'admin.chores.index',
-            'create' => 'admin.chores.create',
-            'store' => 'admin.chores.store',
-            'show' => 'admin.chores.show',
-            'edit' => 'admin.chores.edit',
-            'update' => 'admin.chores.update',
-            'destroy' => 'admin.chores.destroy',
-        ]);
-    Route::post('chores/from-template', [ChoreController::class, 'createFromTemplate'])
-        ->name('admin.chores.from-template');
+    // Chores management
+    Route::get('chores', [ChoreController::class, 'index'])->name('chores.index');
+    Route::post('chores', [ChoreController::class, 'store'])->name('chores.store');
+    Route::put('chores/{chore}', [ChoreController::class, 'update'])->name('chores.update');
+    Route::delete('chores/{chore}', [ChoreController::class, 'destroy'])->name('chores.destroy');
+
+    // Assign chores
+    Route::get('assign-chores', [AssignChoreController::class, 'index'])->name('assign-chores.index');
+    Route::post('assign-chores', [AssignChoreController::class, 'assign'])->name('assign-chores.assign');
+    Route::delete('assign-chores/{assignedChore}', [AssignChoreController::class, 'unassign'])->name('assign-chores.unassign');
+    Route::post('assign-chores/adhoc', [AssignChoreController::class, 'createAdhoc'])->name('assign-chores.adhoc');
+    Route::get('assign-chores/adhoc/search', [AssignChoreController::class, 'searchAdhoc'])->name('assign-chores.adhoc.search');
     
     // Family management
     Route::get('family', [FamilyController::class, 'index'])
-        ->name('admin.family.index');
+        ->name('family.index');
     Route::get('family/edit', [FamilyController::class, 'edit'])
-        ->name('admin.family.edit');
+        ->name('family.edit');
     Route::put('family', [FamilyController::class, 'update'])
-        ->name('admin.family.update');
-    Route::get('family/members', [FamilyController::class, 'members'])
-        ->name('admin.family.members');
+        ->name('family.update');
     Route::patch('family/members/promote', [FamilyController::class, 'promoteMember'])
-        ->name('admin.family.promote-member');
+        ->name('family.promote-member');
     Route::patch('family/members/demote', [FamilyController::class, 'demoteMember'])
-        ->name('admin.family.demote-member');
+        ->name('family.demote-member');
     Route::delete('family/members', [FamilyController::class, 'removeMember'])
-        ->name('admin.family.remove-member');
+        ->name('family.remove-member');
     Route::post('family/members/add', [FamilyController::class, 'addMember'])
-        ->name('admin.family.add-member');
+        ->name('family.add-member');
+    
+    // User management
+    Route::get('users/{user}/edit', [UserController::class, 'edit'])
+        ->name('users.edit');
+    Route::put('users/{user}', [UserController::class, 'update'])
+        ->name('users.update');
 });
 
 // Super Admin routes
@@ -102,6 +93,12 @@ Route::get('/invite/user/{encryptedUserId}', [InviteController::class, 'userInvi
     ->name('invite.user');
 Route::post('/invite/user', [InviteController::class, 'storeUserInvite'])
     ->name('invite.user.store');
+
+// Member and Admin routes (for viewing/assigning available chores)
+Route::middleware(['auth', 'family.member'])->group(function () {
+    Route::get('chores', [MemberChoresController::class, 'index'])->name('chores.index');
+    Route::post('chores/assign', [MemberChoresController::class, 'assign'])->name('chores.assign');
+});
 
 // Profile routes
 Route::middleware('auth')->group(function () {

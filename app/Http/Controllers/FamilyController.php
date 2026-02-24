@@ -26,6 +26,13 @@ class FamilyController extends Controller
             }
         ]);
 
+        // Add encrypted IDs for each user
+        $family->users = $family->users->map(function ($user) {
+            $user->encrypted_id = Crypt::encryptString($user->id);
+            $user->points_balance = $user->getPointsBalance();
+            return $user;
+        });
+
         // Get family statistics
         $familyStats = [
             'total_members' => $family->users()->count(),

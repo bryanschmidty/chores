@@ -22,14 +22,14 @@ class Family extends Model
         return $this->hasMany(User::class);
     }
 
-    public function choreTemplates(): HasMany
-    {
-        return $this->hasMany(ChoreTemplate::class);
-    }
-
     public function chores(): HasMany
     {
         return $this->hasMany(Chore::class);
+    }
+
+    public function assignedChores(): HasMany
+    {
+        return $this->hasMany(AssignedChore::class);
     }
 
     public function shopItems(): HasMany

@@ -21,6 +21,8 @@
         "vue": "^3.4.0"
     },
     "dependencies": {
-        "@vueuse/core": "^13.9.0"
+        "@vueuse/core": "^13.9.0",
+        "vue-draggable-next": "^2.3.0",
+        "vue-good-table-next": "^0.2.2"
     }
 }

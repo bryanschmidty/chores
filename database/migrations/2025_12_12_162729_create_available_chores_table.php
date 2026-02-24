@@ -11,15 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('chore_templates', function (Blueprint $table) {
+        Schema::create('available_chores', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('chore_id')->constrained()->onDelete('cascade');
             $table->foreignId('family_id')->constrained()->onDelete('cascade');
-            $table->string('name');
-            $table->text('description')->nullable();
-            $table->integer('points')->default(10);
-            $table->enum('photo_requirements', ['none', 'after', 'both'])->default('none');
-            $table->boolean('is_active')->default(true);
+            $table->date('available_date');
             $table->timestamps();
+
+            $table->index(['family_id', 'available_date']);
+            $table->index(['chore_id', 'available_date']);
+            $table->unique(['chore_id', 'family_id', 'available_date'], 'unique_chore_family_date');
         });
     }
 
@@ -28,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('chore_templates');
+        Schema::dropIfExists('available_chores');
     }
 };

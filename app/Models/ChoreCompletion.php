@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ChoreCompletion extends Model
 {
     protected $fillable = [
-        'chore_id',
+        'assigned_chore_id',
         'user_id',
         'completed_at',
         'verified_by',
@@ -24,9 +24,9 @@ class ChoreCompletion extends Model
     ];
 
     // Relationships
-    public function chore(): BelongsTo
+    public function assignedChore(): BelongsTo
     {
-        return $this->belongsTo(Chore::class);
+        return $this->belongsTo(AssignedChore::class);
     }
 
     public function user(): BelongsTo
@@ -57,7 +57,7 @@ class ChoreCompletion extends Model
 
     public function scopeForFamily($query, $familyId)
     {
-        return $query->whereHas('chore', function ($q) use ($familyId) {
+        return $query->whereHas('assignedChore', function ($q) use ($familyId) {
             $q->where('family_id', $familyId);
         });
     }
@@ -81,7 +81,7 @@ class ChoreCompletion extends Model
     public function getPointsAwarded(): int
     {
         if ($this->isApproved()) {
-            return (int) round(($this->chore->points * $this->completion_percentage) / 100);
+            return (int) round(($this->assignedChore->chore->points * $this->completion_percentage) / 100);
         }
 
         return 0;

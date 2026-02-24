@@ -47,6 +47,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'last_logged_in' => 'datetime',
             'password' => 'hashed',
             'notification_preferences' => 'array',
         ];
@@ -65,12 +66,12 @@ class User extends Authenticatable
 
     public function assignedChores(): HasMany
     {
-        return $this->hasMany(Chore::class, 'assigned_to');
+        return $this->hasMany(AssignedChore::class, 'assigned_to');
     }
 
-    public function createdChores(): HasMany
+    public function assignedByMe(): HasMany
     {
-        return $this->hasMany(Chore::class, 'created_by');
+        return $this->hasMany(AssignedChore::class, 'assigned_by');
     }
 
     public function redemptions(): HasMany
