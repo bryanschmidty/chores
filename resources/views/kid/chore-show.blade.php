@@ -12,12 +12,16 @@
         <div class="col-12 col-lg-6">
             <div class="card shadow-sm">
                 <div class="card-body">
+                    @php($canClaim = auth()->user()?->can('claim', $choreInstance) ?? false)
                     <h2 class="h6">Claim</h2>
                     <p class="text-body-secondary small">Claim this chore if it is open.</p>
                     <form method="POST" action="{{ route('chore-instances.claim', $choreInstance) }}">
                         @csrf
-                        <button type="submit" class="btn btn-primary btn-sm" @disabled($choreInstance->assigned_to_user_id !== null)>Claim Chore</button>
+                        <button type="submit" class="btn btn-primary btn-sm" @disabled(! $canClaim)>Claim Chore</button>
                     </form>
+                    @unless($canClaim)
+                        <div class="small text-body-secondary mt-2">This chore can be claimed only when it is open and due.</div>
+                    @endunless
                 </div>
             </div>
         </div>

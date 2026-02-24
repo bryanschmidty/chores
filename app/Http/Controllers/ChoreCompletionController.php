@@ -18,6 +18,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -186,6 +187,22 @@ class ChoreCompletionController extends Controller
             $pointsLedgerService->recordApproval($choreCompletion->fresh(['participants']), $request->user()->id);
         });
 
+        $choreCompletion->refresh()->loadMissing('participants');
+        Log::info('chore_completion.approved', [
+            'household_id' => (int) $choreCompletion->household_id,
+            'chore_completion_id' => (int) $choreCompletion->id,
+            'chore_instance_id' => (int) $choreCompletion->chore_instance_id,
+            'completed_by_user_id' => (int) $choreCompletion->completed_by_user_id,
+            'approved_by_user_id' => (int) $request->user()->id,
+            'participant_user_ids' => $choreCompletion->participants
+                ->pluck('user_id')
+                ->map(static fn (mixed $userId): int => (int) $userId)
+                ->values()
+                ->all(),
+            'supervisor_adjusted_points' => $choreCompletion->supervisor_adjusted_points,
+            'approval_comment_present' => filled($choreCompletion->approval_comment),
+        ]);
+
         return to_route('supervisor.queue')->with('status', 'Chore completion approved.');
     }
 
@@ -223,6 +240,16 @@ class ChoreCompletionController extends Controller
                 'status' => $status->value,
             ]);
         });
+
+        $choreCompletion->refresh();
+        Log::info('chore_completion.rejected', [
+            'household_id' => (int) $choreCompletion->household_id,
+            'chore_completion_id' => (int) $choreCompletion->id,
+            'chore_instance_id' => (int) $choreCompletion->chore_instance_id,
+            'completed_by_user_id' => (int) $choreCompletion->completed_by_user_id,
+            'rejected_by_user_id' => (int) $request->user()->id,
+            'rejection_reason_present' => filled($validated['rejection_reason']),
+        ]);
 
         return to_route('supervisor.queue')->with('status', 'Chore completion rejected.');
     }
