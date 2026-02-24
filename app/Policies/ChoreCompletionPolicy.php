@@ -7,6 +7,11 @@ use App\Models\User;
 
 class ChoreCompletionPolicy
 {
+    public function reject(User $user, ChoreCompletion $choreCompletion): bool
+    {
+        return $this->approve($user, $choreCompletion);
+    }
+
     public function approve(User $user, ChoreCompletion $choreCompletion): bool
     {
         if (! $user->hasRole('supervisor')) {

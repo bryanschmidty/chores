@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\GoogleAuthController;
+use App\Http\Controllers\ChoreCompletionController;
 use App\Http\Controllers\ChoreInstanceController;
 use App\Http\Controllers\ChoreTemplateController;
 use App\Http\Controllers\WeeklyClaimController;
@@ -44,4 +45,15 @@ Route::middleware('auth')->group(function () {
         ->name('weekly-claims.store');
     Route::put('/weekly-claims/{weeklyClaim}', [WeeklyClaimController::class, 'update'])
         ->name('weekly-claims.update');
+
+    Route::post('/chore-completions', [ChoreCompletionController::class, 'store'])
+        ->name('chore-completions.store');
+    Route::post('/chore-completions/{choreCompletion}/approve', [ChoreCompletionController::class, 'approve'])
+        ->name('chore-completions.approve');
+    Route::post('/chore-completions/{choreCompletion}/reject', [ChoreCompletionController::class, 'reject'])
+        ->name('chore-completions.reject');
+    Route::get('/leaderboard', [ChoreCompletionController::class, 'leaderboard'])
+        ->name('leaderboard.index');
+    Route::get('/completion-history', [ChoreCompletionController::class, 'history'])
+        ->name('completion-history.index');
 });
