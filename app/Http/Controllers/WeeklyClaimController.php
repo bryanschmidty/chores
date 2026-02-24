@@ -17,12 +17,6 @@ class WeeklyClaimController extends Controller
         $validated = $request->validated();
         $assignedToUser = User::query()->findOrFail($validated['assigned_to_user_id']);
 
-        if (! $assignedToUser->hasRole('kid')) {
-            return redirect()->back()->withErrors([
-                'assigned_to_user_id' => 'Weekly claims can only be assigned to users with the kid role.',
-            ]);
-        }
-
         $weekStart = CarbonImmutable::now()->startOfWeek()->toDateString();
         $weekEnd = CarbonImmutable::now()->endOfWeek()->toDateString();
 
@@ -64,12 +58,6 @@ class WeeklyClaimController extends Controller
         abort_if($request->user()->cannot('update', $weeklyClaim), 403);
 
         $assignedToUser = User::query()->findOrFail((int) $request->validated('assigned_to_user_id'));
-
-        if (! $assignedToUser->hasRole('kid')) {
-            return redirect()->back()->withErrors([
-                'assigned_to_user_id' => 'Weekly claims can only be assigned to users with the kid role.',
-            ]);
-        }
 
         $weeklyClaim->update([
             'assigned_to_user_id' => $assignedToUser->id,

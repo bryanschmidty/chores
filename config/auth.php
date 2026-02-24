@@ -19,6 +19,7 @@ return [
     ],
 
     'local_login_user_id' => env('LOCAL_LOGIN_USER_ID'),
+    'local_login_switch_enabled' => env('LOCAL_LOGIN_SWITCH_ENABLED', false),
 
     /*
     |--------------------------------------------------------------------------

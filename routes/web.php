@@ -20,11 +20,14 @@ Route::post('/logout', [GoogleAuthController::class, 'logout'])
     ->name('logout');
 
 Route::middleware('auth')->group(function () {
+    Route::post('/local-login/switch', [GoogleAuthController::class, 'switchLocalUser'])
+        ->name('local-login.switch');
+
     Route::get('/app', function (Request $request) {
         $user = $request->user();
 
         if ($user->hasRole('parent')) {
-            return to_route('parent.templates');
+            return to_route('parent.chores');
         }
 
         if ($user->hasRole('supervisor')) {
@@ -41,10 +44,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/kid/chores/{choreInstance}', [ChoreInstanceController::class, 'kidShow'])
         ->name('kid.chores.show');
 
-    Route::get('/parent/templates', [ChoreTemplateController::class, 'parentIndex'])
+    Route::get('/parent/templates', fn () => to_route('parent.chores'))
         ->name('parent.templates');
     Route::get('/parent/chores', [ChoreInstanceController::class, 'parentIndex'])
         ->name('parent.chores');
+    Route::get('/parent/chores/create', [ChoreInstanceController::class, 'parentCreate'])
+        ->name('parent.chores.create');
+    Route::get('/parent/chores/recurring/{choreTemplate}/edit', [ChoreTemplateController::class, 'parentEdit'])
+        ->name('parent.chores.recurring.edit');
+    Route::get('/parent/chores/one-time/{choreInstance}/edit', [ChoreInstanceController::class, 'parentEdit'])
+        ->name('parent.chores.one-time.edit');
     Route::get('/parent/history', [ChoreCompletionController::class, 'parentHistory'])
         ->name('parent.history');
     Route::get('/parent/leaderboard', [ChoreCompletionController::class, 'parentLeaderboard'])

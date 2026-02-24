@@ -1,57 +1,76 @@
 @extends('layouts.app')
 
 @section('content')
-    <h1 class="h4 mb-3">Manage Chores</h1>
-
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
-            <h2 class="h6">Create Ad-hoc Chore</h2>
-            <form method="POST" action="{{ route('chore-instances.store') }}" class="row g-2">
-                @csrf
-                <div class="col-12 col-md-4">
-                    <input class="form-control form-control-sm" name="title" placeholder="Title" required>
-                </div>
-                <div class="col-12 col-md-2">
-                    <input class="form-control form-control-sm" name="base_points" type="number" min="1" placeholder="Points" required>
-                </div>
-                <div class="col-12 col-md-3">
-                    <select class="form-select form-select-sm" name="assigned_to_user_id">
-                        <option value="">Open chore</option>
-                        @foreach ($householdUsers as $user)
-                            <option value="{{ $user->id }}">{{ $user->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-12 col-md-3">
-                    <input class="form-control form-control-sm" name="due_at" type="datetime-local">
-                </div>
-                <div class="col-12">
-                    <textarea class="form-control form-control-sm" name="description" placeholder="Description"></textarea>
-                </div>
-                <div class="col-12">
-                    <button class="btn btn-primary btn-sm" type="submit">Create Chore</button>
-                </div>
-            </form>
-        </div>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h4 mb-0">Manage Chores</h1>
+        <a href="{{ route('parent.chores.create') }}" class="btn btn-primary btn-sm">Add Chore</a>
     </div>
 
-    <div class="vstack gap-3">
-        @forelse ($instances as $instance)
-            <x-chore-card :chore="$instance">
-                <form method="POST" action="{{ route('chore-instances.assign', $instance) }}" class="d-flex flex-wrap gap-2 align-items-center">
-                    @csrf
-                    <label class="small text-body-secondary">Reassign:</label>
-                    <select class="form-select form-select-sm w-auto" name="assigned_to_user_id">
-                        <option value="">Open</option>
-                        @foreach ($householdUsers as $user)
-                            <option value="{{ $user->id }}" @selected($instance->assigned_to_user_id === $user->id)>{{ $user->name }}</option>
-                        @endforeach
-                    </select>
-                    <button class="btn btn-sm btn-outline-primary" type="submit">Save</button>
-                </form>
-            </x-chore-card>
-        @empty
-            <div class="alert alert-info mb-0">No chores found.</div>
-        @endforelse
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Title</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Points</th>
+                        <th scope="col">Details</th>
+                        <th scope="col">Assignee</th>
+                        <th scope="col" class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($templates as $template)
+                        @php($currentClaim = $template->weeklyClaims->first())
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">{{ $template->title }}</div>
+                                <div class="small text-body-secondary">{{ $template->description ?: 'No description.' }}</div>
+                            </td>
+                            <td>
+                                <span class="badge text-bg-primary">Recurring chore</span>
+                            </td>
+                            <td>{{ $template->points }}</td>
+                            <td class="small text-body-secondary">
+                                {{ $template->recurrence_type->value }}{{ $template->recurrence_interval ? ' · every ' . $template->recurrence_interval . ' days' : '' }}
+                                <div>{{ $template->is_active ? 'Active' : 'Archived' }}</div>
+                            </td>
+                            <td>{{ $currentClaim?->assignedTo?->name ?: ($template->defaultAssignee?->name ?: 'Open') }}</td>
+                            <td class="text-end">
+                                <a href="{{ route('parent.chores.recurring.edit', $template) }}" class="btn btn-outline-dark btn-sm">Edit</a>
+                            </td>
+                        </tr>
+                    @empty
+                    @endforelse
+
+                    @foreach ($instances as $instance)
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">{{ $instance->title }}</div>
+                                <div class="small text-body-secondary">{{ $instance->description ?: 'No description.' }}</div>
+                            </td>
+                            <td>
+                                <span class="badge text-bg-secondary">One-time chore</span>
+                            </td>
+                            <td>{{ $instance->base_points }}</td>
+                            <td class="small text-body-secondary">
+                                {{ $instance->status->value }}
+                                <div>{{ $instance->due_at?->format('M j, Y') ?: 'No due date' }}</div>
+                            </td>
+                            <td>{{ $instance->assignee?->name ?: 'Open' }}</td>
+                            <td class="text-end">
+                                <a href="{{ route('parent.chores.one-time.edit', $instance) }}" class="btn btn-outline-dark btn-sm">Edit</a>
+                            </td>
+                        </tr>
+                    @endforeach
+
+                    @if ($templates->isEmpty() && $instances->isEmpty())
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-body-secondary">No chores yet. Click "Add Chore" to create one.</td>
+                        </tr>
+                    @endif
+                </tbody>
+            </table>
+        </div>
     </div>
 @endsection

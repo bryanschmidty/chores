@@ -25,7 +25,9 @@ class ChoreRecurrenceService
         }
 
         if ($recurrenceType === RecurrenceType::Weekly->value) {
-            return $targetDate->dayOfWeek === $this->anchorDate($template)->dayOfWeek;
+            $allowedWeekdays = $this->weekdayValues($template);
+
+            return in_array($targetDate->dayOfWeek, $allowedWeekdays, true);
         }
 
         if ($recurrenceType === RecurrenceType::Weekdays->value) {

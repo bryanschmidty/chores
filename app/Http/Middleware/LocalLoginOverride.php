@@ -15,6 +15,20 @@ class LocalLoginOverride
             return $next($request);
         }
 
+        // Precedence: when local switch is enabled and a switch-user session is present,
+        // honor the explicit switch choice and do not force LOCAL_LOGIN_USER_ID.
+        if ((bool) config('auth.local_login_switch_enabled')) {
+            $switchedUserId = (int) $request->session()->get('local_switch_user_id', 0);
+
+            if ($switchedUserId > 0) {
+                if (Auth::id() !== $switchedUserId) {
+                    Auth::loginUsingId($switchedUserId);
+                }
+
+                return $next($request);
+            }
+        }
+
         $localLoginUserId = config('auth.local_login_user_id');
 
         if (blank($localLoginUserId)) {

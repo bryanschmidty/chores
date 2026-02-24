@@ -37,6 +37,10 @@ class UpdateChoreTemplateRequest extends FormRequest
                 'nullable',
                 Rule::exists('users', 'id')->where('household_id', $householdId),
             ],
+            'current_week_claim_user_id' => [
+                'nullable',
+                Rule::exists('users', 'id')->where('household_id', $householdId),
+            ],
             'is_active' => ['nullable', 'boolean'],
         ];
     }

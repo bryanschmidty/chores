@@ -173,3 +173,32 @@ it('creates a today instance for every-n-days templates when last completion is 
 
     Carbon::setTestNow();
 });
+
+it('generates weekly templates on configured weekday instead of today', function () {
+    Carbon::setTestNow('2026-03-10 09:00:00'); // Tuesday
+
+    $household = Household::factory()->create(['timezone' => 'UTC']);
+    $parent = User::factory()->create(['household_id' => $household->id]);
+    $template = ChoreTemplate::factory()->create([
+        'household_id' => $household->id,
+        'created_by_user_id' => $parent->id,
+        'recurrence_type' => RecurrenceType::Weekly->value,
+        'recurrence_weekdays' => [6], // Saturday
+        'is_active' => true,
+    ]);
+
+    $this->artisan('chores:generate-recurring', [
+        '--days-ahead' => 7,
+    ])->assertSuccessful();
+
+    $generated = ChoreInstance::query()
+        ->where('household_id', $household->id)
+        ->where('chore_template_id', $template->id)
+        ->orderBy('due_at')
+        ->get();
+
+    expect($generated)->toHaveCount(1)
+        ->and($generated->first()?->due_at?->toDateString())->toBe('2026-03-14');
+
+    Carbon::setTestNow();
+});

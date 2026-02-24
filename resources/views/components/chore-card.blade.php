@@ -13,7 +13,7 @@
         </div>
         <div class="small text-body-secondary d-flex flex-wrap gap-3 mb-3">
             <span>Points: {{ $chore->base_points }}</span>
-            <span>Due: {{ optional($chore->due_at)?->format('M j, Y g:i A') ?? 'Any time' }}</span>
+            <span>Due: {{ optional($chore->due_at)?->format('M j, Y') ?? 'No due date' }}</span>
             <span>Assigned: {{ $chore->assignee?->name ?? 'Open' }}</span>
         </div>
         {{ $slot }}

@@ -4,6 +4,7 @@ use App\Enums\ChoreSourceType;
 use App\Models\ChoreInstance;
 use App\Models\Household;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -95,4 +96,28 @@ it('allows creator kid to update ad hoc chore', function () {
     $instance->refresh();
 
     expect($instance->title)->toBe('Updated ad hoc');
+});
+
+it('stores one-time due dates as whole-day dates without time', function () {
+    CarbonImmutable::setTestNow('2026-06-10 09:00:00');
+
+    $household = Household::factory()->create();
+    $parent = User::factory()->create(['household_id' => $household->id]);
+    $parent->syncRoles(['parent', 'supervisor']);
+
+    $this->actingAs($parent)
+        ->post(route('chore-instances.store'), [
+            'title' => 'Date only chore',
+            'base_points' => 5,
+            'due_at' => '2026-06-10 18:45:00',
+        ])
+        ->assertRedirect();
+
+    $instance = ChoreInstance::query()->latest('id')->firstOrFail();
+
+    expect($instance->due_at?->toDateString())->toBe('2026-06-10')
+        ->and($instance->due_at?->format('H:i:s'))->toBe('00:00:00')
+        ->and($instance->status->value)->toBe('due');
+
+    CarbonImmutable::setTestNow();
 });

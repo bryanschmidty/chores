@@ -3,8 +3,11 @@
 use App\Enums\ChoreInstanceStatus;
 use App\Enums\ChoreSourceType;
 use App\Models\ChoreInstance;
+use App\Models\ChoreTemplate;
 use App\Models\Household;
 use App\Models\User;
+use App\Models\WeeklyClaim;
+use Carbon\CarbonImmutable;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -87,4 +90,63 @@ it('allows supervisor to reassign and blocks non supervisor', function () {
             'assigned_to_user_id' => $kid->id,
         ])
         ->assertForbidden();
+});
+
+it('claiming recurring chore assigns remaining week occurrences and creates weekly claim', function () {
+    CarbonImmutable::setTestNow('2026-06-10 09:00:00');
+
+    $household = Household::factory()->create();
+    $kid = User::factory()->create(['household_id' => $household->id]);
+    $kid->syncRoles(['kid']);
+
+    $template = ChoreTemplate::factory()->create([
+        'household_id' => $household->id,
+        'created_by_user_id' => $kid->id,
+    ]);
+
+    $todayInstance = ChoreInstance::factory()->create([
+        'household_id' => $household->id,
+        'chore_template_id' => $template->id,
+        'assigned_to_user_id' => null,
+        'claimed_by_user_id' => null,
+        'source_type' => ChoreSourceType::Recurring->value,
+        'status' => ChoreInstanceStatus::Due->value,
+        'due_at' => CarbonImmutable::now()->startOfDay(),
+    ]);
+
+    $futureThisWeek = ChoreInstance::factory()->create([
+        'household_id' => $household->id,
+        'chore_template_id' => $template->id,
+        'assigned_to_user_id' => null,
+        'claimed_by_user_id' => null,
+        'source_type' => ChoreSourceType::Recurring->value,
+        'status' => ChoreInstanceStatus::Upcoming->value,
+        'due_at' => CarbonImmutable::now()->addDays(2)->startOfDay(),
+    ]);
+
+    $nextWeek = ChoreInstance::factory()->create([
+        'household_id' => $household->id,
+        'chore_template_id' => $template->id,
+        'assigned_to_user_id' => null,
+        'claimed_by_user_id' => null,
+        'source_type' => ChoreSourceType::Recurring->value,
+        'status' => ChoreInstanceStatus::Upcoming->value,
+        'due_at' => CarbonImmutable::now()->addDays(7)->startOfDay(),
+    ]);
+
+    $this->actingAs($kid)
+        ->post(route('chore-instances.claim', $todayInstance))
+        ->assertRedirect(route('kid.index'));
+
+    expect(WeeklyClaim::query()->where('chore_template_id', $template->id)->count())->toBe(1);
+
+    $todayInstance->refresh();
+    $futureThisWeek->refresh();
+    $nextWeek->refresh();
+
+    expect($todayInstance->assigned_to_user_id)->toBe($kid->id)
+        ->and($futureThisWeek->assigned_to_user_id)->toBe($kid->id)
+        ->and($nextWeek->assigned_to_user_id)->toBeNull();
+
+    CarbonImmutable::setTestNow();
 });
