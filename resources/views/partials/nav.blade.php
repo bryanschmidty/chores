@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand-lg bg-white border-bottom">
+<nav class="navbar navbar-expand-lg app-nav">
     <div class="container">
         <a class="navbar-brand fw-semibold" href="{{ route('kid.index') }}">Chores</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#main-nav" aria-controls="main-nav" aria-expanded="false" aria-label="Toggle navigation">

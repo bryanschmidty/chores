@@ -1,6 +1,6 @@
 @props(['chore'])
 
-<div {{ $attributes->merge(['class' => 'card shadow-sm']) }}>
+<div {{ $attributes->merge(['class' => 'card shadow-sm app-surface']) }}>
     <div class="card-body">
         <div class="d-flex justify-content-between align-items-start gap-3">
             <div>

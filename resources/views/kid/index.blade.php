@@ -13,18 +13,18 @@
     <div class="row row-cols-2 g-2 mb-3">
         <div class="col">
             <a href="{{ route('kid.index', ['filter' => 'unclaimed']) }}" class="text-decoration-none text-reset d-block h-100">
-                <div class="card shadow-sm h-100">
+                <div class="card shadow-sm h-100 app-stat-card">
                     <div class="card-body py-2 px-3 text-center">
-                        <div class="fs-3 fw-bold lh-1">{{ $unclaimedChoreCount }}</div>
-                        <div class="small text-body-secondary mt-1">unclaimed chores</div>
+                        <div class="fs-3 fw-bold lh-1 stat-number">{{ $unclaimedChoreCount }}</div>
+                        <div class="small text-body-secondary mt-1">Unclaimed Chores</div>
                     </div>
                 </div>
             </a>
         </div>
         <div class="col">
-            <div class="card shadow-sm h-100">
+            <div class="card shadow-sm h-100 app-stat-card">
                 <div class="card-body py-2 px-3 text-center">
-                    <div class="fs-3 fw-bold lh-1">{{ $myPoints }}</div>
+                    <div class="fs-3 fw-bold lh-1 stat-number">{{ $myPoints }}</div>
                     <div class="small text-body-secondary mt-1">My Points</div>
                 </div>
             </div>
@@ -32,7 +32,7 @@
     </div>
 
     <div class="mb-3">
-        <button type="button" class="btn btn-outline-secondary w-100 d-flex justify-content-between align-items-center" id="kid-filter-toggle" aria-expanded="false" aria-controls="kid-filter-options">
+        <button type="button" class="btn btn-outline-secondary w-100 d-flex justify-content-between align-items-center app-surface" id="kid-filter-toggle" aria-expanded="false" aria-controls="kid-filter-options">
             <span class="fw-semibold">{{ $filterLabel }}</span>
             <span class="small">v</span>
         </button>
@@ -49,7 +49,7 @@
     @if ($filter === 'my_chores')
         <div class="vstack gap-3">
             @forelse ($myChores as $instance)
-                <div class="card shadow-sm js-open-chore-card" data-open-url="{{ route('kid.chores.show', ['choreInstance' => $instance, 'filter' => 'my_chores']) }}">
+                <div class="card shadow-sm app-surface js-open-chore-card" data-open-url="{{ route('kid.chores.show', ['choreInstance' => $instance, 'filter' => 'my_chores']) }}">
                     <div class="card-body py-2 px-3">
                         <div class="d-flex justify-content-between align-items-center gap-3">
                             <h3 class="h6 mb-0">{{ $instance->title }}</h3>
@@ -75,7 +75,7 @@
     @if ($filter === 'my_weekly_chores')
         <div class="vstack gap-3">
             @forelse ($myWeeklyChores as $instance)
-                <div class="card shadow-sm js-open-chore-card" data-open-url="{{ route('kid.chores.show', ['choreInstance' => $instance, 'filter' => 'my_weekly_chores']) }}">
+                <div class="card shadow-sm app-surface js-open-chore-card" data-open-url="{{ route('kid.chores.show', ['choreInstance' => $instance, 'filter' => 'my_weekly_chores']) }}">
                     <div class="card-body py-2 px-3">
                         <div class="d-flex justify-content-between align-items-center gap-3">
                             <h3 class="h6 mb-0">{{ $instance->title }}</h3>
@@ -97,7 +97,7 @@
     @if ($filter === 'my_completed_chores')
         <div class="vstack gap-3">
             @forelse ($myCompletedChores as $instance)
-                <div class="card shadow-sm js-open-chore-card" data-open-url="{{ route('kid.chores.show', ['choreInstance' => $instance, 'filter' => 'my_completed_chores']) }}">
+                <div class="card shadow-sm app-surface js-open-chore-card" data-open-url="{{ route('kid.chores.show', ['choreInstance' => $instance, 'filter' => 'my_completed_chores']) }}">
                     <div class="card-body py-2 px-3">
                         <div class="d-flex justify-content-between align-items-center gap-3">
                             <h3 class="h6 mb-0">{{ $instance->title }}</h3>
@@ -124,7 +124,7 @@
     @if ($filter === 'unclaimed')
         <div class="vstack gap-3">
             @forelse ($unclaimedToday as $instance)
-                <div class="card shadow-sm">
+                <div class="card shadow-sm app-surface">
                     <div class="card-body py-2 px-3">
                         <div class="d-flex justify-content-between align-items-center gap-3 mb-2">
                             <h3 class="h6 mb-0">{{ $instance->title }}</h3>
