@@ -19,9 +19,52 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Illuminate\View\View;
 
 class ChoreCompletionController extends Controller
 {
+    public function parentHistory(Request $request, PointsSummaryService $pointsSummaryService): View
+    {
+        abort_unless($request->user()->hasAnyRole(['parent', 'supervisor']), 403);
+
+        $history = $pointsSummaryService->completionHistoryForHousehold((int) $request->user()->household_id);
+
+        return view('parent.history', [
+            'history' => $history,
+        ]);
+    }
+
+    public function parentLeaderboard(Request $request, PointsSummaryService $pointsSummaryService): View
+    {
+        abort_unless($request->user()->hasAnyRole(['parent', 'supervisor']), 403);
+
+        $leaderboard = $pointsSummaryService->leaderboardForHousehold((int) $request->user()->household_id);
+
+        return view('parent.leaderboard', [
+            'leaderboard' => $leaderboard,
+        ]);
+    }
+
+    public function supervisorQueue(Request $request): View
+    {
+        abort_unless($request->user()->hasRole('supervisor'), 403);
+
+        $pendingCompletions = ChoreCompletion::query()
+            ->where('household_id', $request->user()->household_id)
+            ->where('approval_status', ApprovalStatus::Pending->value)
+            ->with([
+                'choreInstance:id,household_id,title,base_points,deadline_at',
+                'completedBy:id,name',
+                'participants.user:id,name',
+            ])
+            ->latest('completed_at')
+            ->get();
+
+        return view('supervisor.queue', [
+            'pendingCompletions' => $pendingCompletions,
+        ]);
+    }
+
     public function store(StoreChoreCompletionRequest $request): RedirectResponse
     {
         $validated = $request->validated();
@@ -80,7 +123,8 @@ class ChoreCompletionController extends Controller
             ]);
         });
 
-        return redirect()->back()->with('status', 'Chore completion submitted for approval.');
+        return to_route($this->defaultRouteForUser($request->user()->hasRole('parent'), $request->user()->hasRole('supervisor')))
+            ->with('status', 'Chore completion submitted for approval.');
     }
 
     public function approve(
@@ -142,7 +186,7 @@ class ChoreCompletionController extends Controller
             $pointsLedgerService->recordApproval($choreCompletion->fresh(['participants']), $request->user()->id);
         });
 
-        return redirect()->back()->with('status', 'Chore completion approved.');
+        return to_route('supervisor.queue')->with('status', 'Chore completion approved.');
     }
 
     public function reject(
@@ -180,7 +224,7 @@ class ChoreCompletionController extends Controller
             ]);
         });
 
-        return redirect()->back()->with('status', 'Chore completion rejected.');
+        return to_route('supervisor.queue')->with('status', 'Chore completion rejected.');
     }
 
     public function leaderboard(Request $request, PointsSummaryService $pointsSummaryService): Response
@@ -195,5 +239,18 @@ class ChoreCompletionController extends Controller
         $history = $pointsSummaryService->completionHistoryForHousehold((int) $request->user()->household_id);
 
         return response($history->toJson(), 200, ['Content-Type' => 'application/json']);
+    }
+
+    private function defaultRouteForUser(bool $isParent, bool $isSupervisor): string
+    {
+        if ($isParent) {
+            return 'parent.history';
+        }
+
+        if ($isSupervisor) {
+            return 'supervisor.queue';
+        }
+
+        return 'kid.index';
     }
 }

@@ -7,14 +7,80 @@ use App\Enums\ChoreSourceType;
 use App\Http\Requests\StoreChoreInstanceRequest;
 use App\Http\Requests\UpdateChoreInstanceRequest;
 use App\Models\ChoreInstance;
+use App\Models\User;
 use App\Services\ChoreListService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Validation\Rule;
+use Illuminate\View\View;
 
 class ChoreInstanceController extends Controller
 {
+    public function kidIndex(Request $request, ChoreListService $choreListService): View
+    {
+        abort_unless($request->user()->hasAnyRole(['kid', 'parent', 'supervisor']), 403);
+
+        $instances = $choreListService->defaultKidList($request->user());
+
+        return view('kid.index', [
+            'instances' => $instances,
+        ]);
+    }
+
+    public function kidAll(Request $request): View
+    {
+        abort_unless($request->user()->hasAnyRole(['kid', 'parent', 'supervisor']), 403);
+
+        $instances = ChoreInstance::query()
+            ->forHousehold($request->user()->household_id)
+            ->with(['assignee:id,name', 'createdBy:id,name'])
+            ->orderBy('due_at')
+            ->orderByDesc('created_at')
+            ->get();
+
+        return view('kid.chores', [
+            'instances' => $instances,
+        ]);
+    }
+
+    public function kidShow(Request $request, ChoreInstance $choreInstance): View
+    {
+        abort_if($request->user()->cannot('view', $choreInstance), 403);
+
+        $helpers = User::query()
+            ->where('household_id', $request->user()->household_id)
+            ->where('id', '!=', $request->user()->id)
+            ->orderBy('name')
+            ->get();
+
+        return view('kid.chore-show', [
+            'choreInstance' => $choreInstance->load(['assignee:id,name', 'createdBy:id,name']),
+            'helpers' => $helpers,
+        ]);
+    }
+
+    public function parentIndex(Request $request): View
+    {
+        abort_unless($request->user()->hasAnyRole(['parent', 'supervisor']), 403);
+
+        $instances = ChoreInstance::query()
+            ->forHousehold($request->user()->household_id)
+            ->with(['assignee:id,name', 'createdBy:id,name'])
+            ->latest()
+            ->get();
+
+        $householdUsers = User::query()
+            ->where('household_id', $request->user()->household_id)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        return view('parent.instances', [
+            'instances' => $instances,
+            'householdUsers' => $householdUsers,
+        ]);
+    }
+
     public function index(Request $request): Response
     {
         $instances = app(ChoreListService::class)->defaultKidList($request->user());
@@ -53,7 +119,7 @@ class ChoreInstanceController extends Controller
             'status' => $dueAt === null ? ChoreInstanceStatus::Due->value : ChoreInstanceStatus::Upcoming->value,
         ]);
 
-        return redirect()->back()->with('status', 'Ad-hoc chore created.');
+        return to_route($this->defaultRouteForUser($request->user()))->with('status', 'Ad-hoc chore created.');
     }
 
     public function update(UpdateChoreInstanceRequest $request, ChoreInstance $choreInstance): RedirectResponse
@@ -69,7 +135,7 @@ class ChoreInstanceController extends Controller
             'due_at' => $validated['due_at'] ?? null,
         ]);
 
-        return redirect()->back()->with('status', 'Ad-hoc chore updated.');
+        return to_route($this->defaultRouteForUser($request->user()))->with('status', 'Ad-hoc chore updated.');
     }
 
     public function destroy(Request $request, ChoreInstance $choreInstance): RedirectResponse
@@ -78,7 +144,7 @@ class ChoreInstanceController extends Controller
 
         $choreInstance->delete();
 
-        return redirect()->back()->with('status', 'Ad-hoc chore deleted.');
+        return to_route($this->defaultRouteForUser($request->user()))->with('status', 'Ad-hoc chore deleted.');
     }
 
     public function claim(Request $request, ChoreInstance $choreInstance): RedirectResponse
@@ -91,7 +157,7 @@ class ChoreInstanceController extends Controller
             'claimed_at' => now(),
         ]);
 
-        return redirect()->back()->with('status', 'Chore claimed.');
+        return to_route('kid.index')->with('status', 'Chore claimed.');
     }
 
     public function assign(Request $request, ChoreInstance $choreInstance): RedirectResponse
@@ -109,6 +175,19 @@ class ChoreInstanceController extends Controller
             'assigned_to_user_id' => $validated['assigned_to_user_id'] ?? null,
         ]);
 
-        return redirect()->back()->with('status', 'Chore assignment updated.');
+        return to_route($this->defaultRouteForUser($request->user()))->with('status', 'Chore assignment updated.');
+    }
+
+    private function defaultRouteForUser(User $user): string
+    {
+        if ($user->hasRole('parent')) {
+            return 'parent.chores';
+        }
+
+        if ($user->hasRole('supervisor')) {
+            return 'supervisor.queue';
+        }
+
+        return 'kid.index';
     }
 }

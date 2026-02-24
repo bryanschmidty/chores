@@ -5,6 +5,7 @@ use App\Http\Controllers\ChoreCompletionController;
 use App\Http\Controllers\ChoreInstanceController;
 use App\Http\Controllers\ChoreTemplateController;
 use App\Http\Controllers\WeeklyClaimController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -19,6 +20,39 @@ Route::post('/logout', [GoogleAuthController::class, 'logout'])
     ->name('logout');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/app', function (Request $request) {
+        $user = $request->user();
+
+        if ($user->hasRole('parent')) {
+            return to_route('parent.templates');
+        }
+
+        if ($user->hasRole('supervisor')) {
+            return to_route('supervisor.queue');
+        }
+
+        return to_route('kid.index');
+    })->name('app.home');
+
+    Route::get('/kid', [ChoreInstanceController::class, 'kidIndex'])
+        ->name('kid.index');
+    Route::get('/kid/chores', [ChoreInstanceController::class, 'kidAll'])
+        ->name('kid.chores');
+    Route::get('/kid/chores/{choreInstance}', [ChoreInstanceController::class, 'kidShow'])
+        ->name('kid.chores.show');
+
+    Route::get('/parent/templates', [ChoreTemplateController::class, 'parentIndex'])
+        ->name('parent.templates');
+    Route::get('/parent/chores', [ChoreInstanceController::class, 'parentIndex'])
+        ->name('parent.chores');
+    Route::get('/parent/history', [ChoreCompletionController::class, 'parentHistory'])
+        ->name('parent.history');
+    Route::get('/parent/leaderboard', [ChoreCompletionController::class, 'parentLeaderboard'])
+        ->name('parent.leaderboard');
+
+    Route::get('/supervisor/queue', [ChoreCompletionController::class, 'supervisorQueue'])
+        ->name('supervisor.queue');
+
     Route::get('/chore-templates', [ChoreTemplateController::class, 'index'])
         ->name('chore-templates.index');
     Route::post('/chore-templates', [ChoreTemplateController::class, 'store'])
