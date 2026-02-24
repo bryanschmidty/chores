@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Enums\ChoreInstanceStatus;
 use App\Enums\ChoreSourceType;
+use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -76,5 +78,36 @@ class ChoreInstance extends Model
     public function completions(): HasMany
     {
         return $this->hasMany(ChoreCompletion::class);
+    }
+
+    public function scopeForHousehold(Builder $query, int $householdId): Builder
+    {
+        return $query->where('household_id', $householdId);
+    }
+
+    public function scopeAssignedToUser(Builder $query, int $userId): Builder
+    {
+        return $query->where('assigned_to_user_id', $userId);
+    }
+
+    public function scopeOpen(Builder $query): Builder
+    {
+        return $query->whereNull('assigned_to_user_id');
+    }
+
+    public function scopeOpenDueOrOverdue(Builder $query): Builder
+    {
+        return $query->open()->whereIn('status', [
+            ChoreInstanceStatus::Due->value,
+            ChoreInstanceStatus::Overdue->value,
+        ]);
+    }
+
+    public function scopeFutureRecurringWindow(Builder $query, CarbonInterface $asOf, int $days = 7): Builder
+    {
+        return $query
+            ->where('source_type', ChoreSourceType::Recurring->value)
+            ->where('due_at', '>', $asOf)
+            ->where('due_at', '<=', $asOf->copy()->addDays($days));
     }
 }

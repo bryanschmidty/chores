@@ -8,6 +8,11 @@ use App\Models\User;
 
 class ChoreInstancePolicy
 {
+    public function create(User $user): bool
+    {
+        return $user->hasAnyRole(['parent', 'kid']);
+    }
+
     public function assign(User $user, ChoreInstance $choreInstance): bool
     {
         if (! $user->hasRole('supervisor')) {
@@ -35,7 +40,20 @@ class ChoreInstancePolicy
 
     public function update(User $user, ChoreInstance $choreInstance): bool
     {
-        return $this->assign($user, $choreInstance);
+        if ($user->household_id !== $choreInstance->household_id) {
+            return false;
+        }
+
+        if ($user->hasAnyRole(['parent', 'supervisor'])) {
+            return true;
+        }
+
+        return $user->hasRole('kid') && $choreInstance->created_by_user_id === $user->id;
+    }
+
+    public function delete(User $user, ChoreInstance $choreInstance): bool
+    {
+        return $this->update($user, $choreInstance);
     }
 
     public function view(User $user, ChoreInstance $choreInstance): bool
