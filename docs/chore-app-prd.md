@@ -188,6 +188,7 @@ The app supports:
 - JavaScript: standard vanilla JS only for MVP (no frontend framework).
 - UI architecture: use Blade layouts/partials/components to minimize duplicated markup.
 - Deployment database: MySQL 8.
+- Queue driver: `database`.
 - Background processing: basic queue worker and scheduler/cron setup.
 - Time zone handling must be explicit per household (TBD exact behavior).
 
@@ -221,9 +222,10 @@ The app supports:
 27. Frontend stack for MVP is Blade + vanilla JS + Bootstrap 5 via CDN.
 28. Use layouts/partials/components to reduce duplicate UI code.
 29. Deployment uses MySQL 8.
-30. Basic queue worker and scheduler/cron capability are required in deployment.
-31. Local development supports `LOCAL_LOGIN_USER_ID` auto-login override.
-32. Add `make:user` command with args + interactive prompts and default password `password`.
+30. Queue driver is `database` for MVP.
+31. Basic queue worker and scheduler/cron capability are required in deployment.
+32. Local development supports `LOCAL_LOGIN_USER_ID` auto-login override.
+33. Add `make:user` command with args + interactive prompts and default password `password`.
 
 ## 11) Proposed MVP Scope Cut (Recommendation)
 For fastest first build, include:

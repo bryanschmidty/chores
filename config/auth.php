@@ -18,6 +18,8 @@ return [
         'passwords' => env('AUTH_PASSWORD_BROKER', 'users'),
     ],
 
+    'local_login_user_id' => env('LOCAL_LOGIN_USER_ID'),
+
     /*
     |--------------------------------------------------------------------------
     | Authentication Guards

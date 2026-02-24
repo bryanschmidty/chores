@@ -21,6 +21,16 @@ This application is a Laravel application and its main Laravel ecosystems packag
 - phpunit/phpunit (PHPUNIT) - v12
 - tailwindcss (TAILWINDCSS) - v4
 
+## Project-Specific MVP Overrides
+
+- For this chore app MVP, use Blade templates only.
+- Use Bootstrap 5 via CDN for styling.
+- Use vanilla JavaScript only.
+- Prefer Blade layouts/partials/components to reduce duplicated markup.
+- Do not introduce Tailwind-first UI changes for MVP unless explicitly requested by the user.
+- Deployment assumptions for MVP are MySQL 8, `database` queue driver, queue worker, and scheduler/cron enabled.
+- Local development supports `LOCAL_LOGIN_USER_ID` auto-auth override in local/dev only.
+
 ## Skills Activation
 
 This project has domain-specific skills available. You MUST activate the relevant skill whenever you work in that domain—don't wait until you're stuck.

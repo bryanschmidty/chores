@@ -11,7 +11,8 @@ This plan is a build sequence for the MVP defined in `docs/chore-app-prd.md`.
   - Vanilla JavaScript only
   - Blade layouts/partials/components to reduce duplication
   - MySQL 8 for deployment
-  - Queue worker + scheduler/cron enabled
+  - Queue driver `database` + queue worker enabled
+  - Scheduler/cron enabled
 - Output: stack choices documented in `docs/` and reflected in project config.
 
 ### Task 2: Install auth and authorization dependencies
@@ -202,7 +203,7 @@ This plan is a build sequence for the MVP defined in `docs/chore-app-prd.md`.
 
 ### Task 29: Background jobs and schedule setup
 - Add scheduled job(s) for recurrence prep/backfill as needed.
-- Verify scheduler and queue worker configuration in local and deploy env.
+- Verify `database` queue driver, scheduler, and queue worker configuration in local and deploy env.
 - Output: due chores remain current without manual intervention.
 
 ### Task 30: Auditability and observability
