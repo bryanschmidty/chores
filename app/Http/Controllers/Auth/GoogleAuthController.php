@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Services\Auth\ResolveGoogleUser;
+use App\Services\Auth\UnapprovedGoogleAccount;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -27,7 +28,12 @@ class GoogleAuthController extends Controller
                 ->with('error', 'Google sign-in was not completed. Please try again.');
         }
 
-        $user = $resolveGoogleUser->resolve($googleUser);
+        try {
+            $user = $resolveGoogleUser->resolve($googleUser);
+        } catch (UnapprovedGoogleAccount $exception) {
+            return redirect('/')
+                ->with('error', $exception->getMessage());
+        }
 
         Auth::login($user);
         $request->session()->regenerate();

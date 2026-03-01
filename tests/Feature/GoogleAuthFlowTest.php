@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\Household;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Socialite\Facades\Socialite;
@@ -9,6 +8,12 @@ use Spatie\Permission\Models\Role;
 
 uses(RefreshDatabase::class);
 
+beforeEach(function (): void {
+    Role::findOrCreate('parent', 'web');
+    Role::findOrCreate('kid', 'web');
+    Role::findOrCreate('supervisor', 'web');
+});
+
 it('redirects to google oauth provider', function () {
     Socialite::fake('google');
 
@@ -16,33 +21,8 @@ it('redirects to google oauth provider', function () {
         ->assertRedirect();
 });
 
-it('bootstraps first household user as parent and supervisor', function () {
-    Socialite::fake('google', (new SocialiteUser)->map([
-        'id' => 'google-first-1',
-        'name' => 'First Parent',
-        'email' => 'first.parent@example.com',
-        'avatar' => 'https://example.com/avatar-first.png',
-    ]));
-
-    $this->get(route('auth.google.callback'))
-        ->assertRedirect('/');
-
-    $user = User::query()
-        ->where('google_id', 'google-first-1')
-        ->firstOrFail();
-
-    expect(Household::query()->count())->toBe(1)
-        ->and($user->hasRole('parent'))->toBeTrue()
-        ->and($user->hasRole('supervisor'))->toBeTrue()
-        ->and($user->household_id)->not->toBeNull();
-
-    $this->assertAuthenticatedAs($user);
-});
-
 it('links an existing user by google id', function () {
-    $household = Household::factory()->create();
     $existingUser = User::factory()->create([
-        'household_id' => $household->id,
         'email' => 'existing.id@example.com',
         'google_id' => 'google-existing-1',
         'google_email' => 'existing.id@example.com',
@@ -68,9 +48,7 @@ it('links an existing user by google id', function () {
 });
 
 it('links an existing user by email when google id is missing', function () {
-    $household = Household::factory()->create();
     $existingUser = User::factory()->create([
-        'household_id' => $household->id,
         'email' => 'email.match@example.com',
         'google_id' => null,
     ]);
@@ -94,34 +72,20 @@ it('links an existing user by email when google id is missing', function () {
     $this->assertAuthenticatedAs($existingUser);
 });
 
-it('auto creates kid user for unknown google account after bootstrap', function () {
-    Role::findOrCreate('parent', 'web');
-    Role::findOrCreate('kid', 'web');
-    Role::findOrCreate('supervisor', 'web');
-
-    $household = Household::factory()->create();
-    $bootstrapParent = User::factory()->create([
-        'household_id' => $household->id,
-        'email' => 'parent.bootstrap@example.com',
-    ]);
-    $bootstrapParent->syncRoles(['parent', 'supervisor']);
-
+it('blocks unknown google users from logging in', function () {
     Socialite::fake('google', (new SocialiteUser)->map([
-        'id' => 'google-new-kid-1',
-        'name' => 'New Kid',
-        'email' => 'new.kid@example.com',
-        'avatar' => 'https://example.com/new-kid-avatar.png',
+        'id' => 'google-not-approved-1',
+        'name' => 'Not Approved',
+        'email' => 'no.access@example.com',
+        'avatar' => 'https://example.com/no-access-avatar.png',
     ]));
 
     $this->get(route('auth.google.callback'))
-        ->assertRedirect('/');
+        ->assertRedirect('/')
+        ->assertSessionHas('error', 'The Google account no.access@example.com is not approved for this app.');
 
-    $newUser = User::query()
-        ->where('google_id', 'google-new-kid-1')
-        ->firstOrFail();
-
-    expect($newUser->household_id)->toBe($household->id)
-        ->and($newUser->hasRole('kid'))->toBeTrue();
+    expect(User::query()->count())->toBe(0);
+    $this->assertGuest();
 });
 
 it('logs out and invalidates authenticated session', function () {

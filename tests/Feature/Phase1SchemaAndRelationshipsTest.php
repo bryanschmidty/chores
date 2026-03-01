@@ -14,6 +14,7 @@ use App\Models\User;
 use Database\Seeders\BaselineHouseholdSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Schema;
 
 use function Pest\Laravel\seed;
@@ -37,6 +38,19 @@ it('creates phase one tables and expected user columns', function () {
 });
 
 it('seeds phase one baseline data and role combinations', function () {
+    Config::set('approved-users.users', [
+        [
+            'name' => 'Parent User',
+            'email' => 'parent@example.com',
+            'roles' => ['parent', 'supervisor'],
+        ],
+        [
+            'name' => 'Kid User',
+            'email' => 'kid@example.com',
+            'roles' => ['kid'],
+        ],
+    ]);
+
     seed([RoleSeeder::class, BaselineHouseholdSeeder::class]);
 
     $parent = User::query()->where('email', 'parent@example.com')->firstOrFail();
